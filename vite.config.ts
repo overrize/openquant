@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  base: process.env.VITE_BASE || '/',
   server: {
     proxy: {
       // 开发时通过同源代理访问 Yahoo，避免浏览器 CORS 拦截；未命中时会返回 index.html 导致 JSON 解析报错

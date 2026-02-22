@@ -61,6 +61,42 @@ npm run preview
 - Tailwind CSS
 - Finnhub / Yahoo（美股 K 线）、腾讯+新浪+东方财富（A 股 K 线，兼容 [Ashare](https://github.com/mpquant/Ashare) 数据源）、Binance WebSocket
 
+## 分享与发布（给别人使用）
+
+### 方式一：分享仓库（给会跑代码的人）
+
+- 把仓库设为 **Public** 或把对方加为 **Collaborator**，对方克隆后执行：
+  ```bash
+  git clone https://github.com/你的用户名/openquant.git
+  cd openquant
+  npm install
+  npm run dev
+  ```
+- 或直接发仓库链接，对方 Fork 后本地运行。
+
+### 方式二：发布成网站（任何人打开链接即用）—— GitHub Pages
+
+用 GitHub 自带的 **Pages** 能力，推代码后自动构建、发布成一个在线地址，别人点开就能用。
+
+1. **开启 GitHub Pages**
+   - 仓库 → **Settings** → 左侧 **Pages**
+   - **Source** 选 **GitHub Actions**（不要选 Deploy from a branch）
+
+2. **推送代码触发部署**
+   - 推送包含本仓库的 `.github/workflows/deploy-pages.yml` 到 `main` 分支
+   - 首次推送后到 **Actions** 里看是否有 “Deploy to GitHub Pages” 在跑，跑完即发布成功
+
+3. **访问地址**
+   - 发布成功后，在 **Settings → Pages** 里会显示站点地址，形如：
+   - `https://你的用户名.github.io/openquant/`（其中 `openquant` 为仓库名）
+
+说明：美股 K 线在浏览器直连可能因 Yahoo 限制出现 403，可让用户配置 Alpha Vantage Key 或主要使用 A 股/加密货币 K 线。
+
+### 方式三：用 Vercel / Netlify（可选）
+
+- 把仓库导入 [Vercel](https://vercel.com) 或 [Netlify](https://netlify.com)，用默认配置即可自动构建并给一个 `xxx.vercel.app` / `xxx.netlify.app` 地址。
+- 无需改 `base`，适合想要独立域名或更快的 CDN 时使用。
+
 ## 注意事项
 
 - Finnhub 免费版有调用频率限制，标的不宜过多。
