@@ -2,8 +2,7 @@ import { useState } from 'react'
 import type { TickerRow } from '../types'
 import { TickerRow as TickerRowComponent } from './TickerRow'
 import { KlineModal } from './KlineModal'
-import { useMarketOverview } from '../hooks/useMarketOverview'
-import { useUsIndex } from '../hooks/useUsIndex'
+import { useMarketOverview, useMarketOverviewUs } from '../hooks/useMarketOverview'
 import { useCryptoFearGreed, useCryptoRSI, useAltcoinSeasonIndex } from '../hooks/useCryptoFearGreed'
 import { MarketOverviewPanel } from './MarketOverviewPanel'
 
@@ -50,7 +49,7 @@ export function Dashboard({
   const [searchCrypto, setSearchCrypto] = useState('')
   const [searchCn, setSearchCn] = useState('')
   const marketOverview = useMarketOverview(activeTab === 'cn')
-  const usIndex = useUsIndex(apiKey)
+  const usMarketOverview = useMarketOverviewUs(apiKey, activeTab === 'us')
   const cryptoFearGreed = useCryptoFearGreed(activeTab === 'crypto')
   const cryptoRsiList = useCryptoRSI(
     activeTab === 'crypto' ? cryptoList.map((r) => r.symbol) : [],
@@ -81,16 +80,14 @@ export function Dashboard({
       <div className="bg-[var(--panel)] rounded-xl rounded-tl-none border border-[var(--border)] overflow-hidden">
         {activeTab === 'us' && (
           <div>
-            {usIndex && (
-              <div className="px-4 py-3 border-b border-[var(--border)] flex flex-wrap items-center gap-4 bg-[var(--bg)]/50">
-                <span className="text-xs text-[var(--muted)]">大盘指数</span>
-                <span className="text-lg font-semibold tabular-nums text-[var(--text)]">{usIndex.name}</span>
-                <span className="tabular-nums">{usIndex.price.toFixed(2)}</span>
-                <span className={`text-sm tabular-nums ${usIndex.change >= 0 ? 'text-tick-up' : 'text-tick-down'}`}>
-                  {usIndex.change >= 0 ? '+' : ''}{usIndex.change.toFixed(2)} ({usIndex.change >= 0 ? '+' : ''}{usIndex.changePercent.toFixed(2)}%)
-                </span>
-              </div>
-            )}
+            <div className="border-b border-[var(--border)]">
+              <MarketOverviewPanel
+                indices={usMarketOverview.indices}
+                sentiment={usMarketOverview.sentiment}
+                behavior={usMarketOverview.behavior}
+                loading={usMarketOverview.loading}
+              />
+            </div>
             <div className="flex gap-2 px-4 py-2 border-b border-[var(--border)]">
               <input
                 type="text"

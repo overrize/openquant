@@ -10,6 +10,11 @@ interface MarketOverviewPanelProps {
   loading: boolean
 }
 
+/** 是否有情绪广度（涨跌家数等），无则羊群/处置/注意力为默认 50 */
+function hasBreadth(sentiment: SentimentBreadth | null): boolean {
+  return sentiment != null && sentiment.total > 0
+}
+
 function formatPct(n: number): string {
   const sign = n >= 0 ? '+' : ''
   return `${sign}${n.toFixed(2)}%`
@@ -86,12 +91,15 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
 
       <div>
         <h4 className="text-sm font-medium text-[var(--muted)] mb-3">行为经济学指标</h4>
-        <p className="text-xs text-[var(--muted)] mb-3">
-          由指数与情绪广度实时推算，数值 0–100，便于观察因子影响与决策参考
+        <p className="text-xs text-[var(--muted)] mb-2">
+          由指数与情绪广度实时推算，数值 0–100。无涨跌家数数据时，羊群/处置/注意力显示为 50（中性），仅锚定随指数波动变化。
         </p>
+        {!hasBreadth(sentiment) && (
+          <p className="text-xs text-amber-600/90 mb-2">当前无情绪广度数据，追涨意愿、惜售抗跌、吸金度为默认 50。</p>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { key: 'herd' as const, label: '羊群效应(追涨意愿)', value: behavior.herd, color: 'text-yellow-400' },
+            { key: 'herd' as const, label: '羊群效应(追涨/跟风)', value: behavior.herd, color: 'text-yellow-400' },
             { key: 'anchor' as const, label: '锚定效应(溢价参考)', value: behavior.anchor, color: 'text-orange-400' },
             { key: 'disposition' as const, label: '处置效应(惜售抗跌)', value: behavior.disposition, color: 'text-green-400' },
             { key: 'attention' as const, label: '注意力效应(吸金度)', value: behavior.attention, color: 'text-blue-400' },
@@ -114,10 +122,10 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
           ))}
         </div>
         <div className="mt-3 text-xs text-[var(--muted)] space-y-1">
-          <p>· 羊群：涨跌家数趋同度代理，高=跟风强(横截面趋同)</p>
-          <p>· 锚定：指数波动偏离参考点，高=仍依赖锚定</p>
-          <p>· 处置：涨停/(涨停+跌停)，高=惜售强</p>
-          <p>· 注意力：上涨家数占比，高=资金关注集中</p>
+          <p>· 羊群 = 50 + (上涨家数占比−0.5)×100；全涨→100(追涨强)，全跌→0(跟风卖)，各半→50</p>
+          <p>· 锚定 = 50 − |指数日涨跌幅%|×3；波动大→低(锚被打破)，波动小→高</p>
+          <p>· 处置 = 涨停/(涨停+跌停)×100；高=惜售强</p>
+          <p>· 注意力 = 上涨家数占比×100；高=资金关注偏多</p>
         </div>
       </div>
     </div>

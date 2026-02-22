@@ -82,14 +82,19 @@ export async function fetchSentimentBreadth(): Promise<SentimentBreadth | null> 
 
 /**
  * 行为经济学指标（0–100）
- * 计算方式参考行为金融学实证：羊群(横截面趋同/涨跌家数)、锚定(参考点依赖/指数偏离)、
- * 处置(惜售/涨停跌停比)、注意力(资金关注/上涨广度)
+ * 公式说明（与界面“计算说明”一致）：
+ * - 羊群 herd = 50 + (上涨家数占比 - 0.5)*100。无广度数据时=50。
+ *   含义：涨跌越一边倒(全涨→100/全跌→0)越跟风，越各半(50)越分化。
+ * - 锚定 anchor = 50 - |指数日涨跌幅%|*3。仅依赖指数，总有值。
+ *   含义：波动大→锚定被打破(低)，波动小→仍依赖参考点(高)。
+ * - 处置 disposition = 涨停/(涨停+跌停)*100。无涨停跌停时=50。
+ * - 注意力 attention = 上涨家数占比*100。无广度时=50。
  */
 export interface BehaviorIndicators {
-  herd: number       // 羊群效应：上涨占比偏离 0.5 越大越跟风
-  anchor: number     // 锚定效应：指数涨跌幅作参考偏离度代理
-  disposition: number // 处置效应：涨停/(涨停+跌停) 惜售强度
-  attention: number   // 注意力效应：上涨占比 吸金度
+  herd: number
+  anchor: number
+  disposition: number
+  attention: number
 }
 
 export function computeBehaviorIndicators(
@@ -103,17 +108,13 @@ export function computeBehaviorIndicators(
 
   if (sentiment && sentiment.total > 0) {
     const upRatio = sentiment.up / sentiment.total
-    // 羊群：横截面趋同度代理。涨跌越分化(upRatio≈0.5)羊群越弱，越一边倒(0或1)跟风越强
     herd = Math.round(50 + (upRatio - 0.5) * 100)
-    // 处置效应：惜售/抗跌。涨停多则惜售强(高)，跌停多则扛单(低)，用涨停占比
     const limitTotal = sentiment.limitUp + sentiment.limitDown
     const limitRatio = limitTotal > 0 ? sentiment.limitUp / limitTotal : 0.5
     disposition = Math.round(limitRatio * 100)
-    // 注意力：上涨家数占比代表资金关注广度
     attention = Math.round(upRatio * 100)
   }
 
-  // 锚定效应：过度依赖参考点。用指数日涨跌幅作“偏离锚”的代理，绝对值大表示波动大、锚定易被打破
   anchor = Math.round(50 - Math.abs(indexChangePercent) * 3)
 
   herd = Math.max(0, Math.min(100, herd))
