@@ -1,10 +1,18 @@
 /**
- * 加密货币恐慌贪婪指数，仅在选择加密货币标签时拉取（Alternative.me 更新频率约数小时）
+ * 加密货币情绪与市场指标：恐慌贪婪、RSI 热力图、山寨币季节指数
  */
 import { useEffect, useState } from 'react'
-import { fetchCryptoFearGreed, type FearGreedResult } from '../api/cryptoSentiment'
+import {
+  fetchCryptoFearGreed,
+  fetchCryptoRSI,
+  fetchAltcoinSeasonIndex,
+  type FearGreedResult,
+  type RsiItem,
+} from '../api/cryptoSentiment'
 
-const INTERVAL_MS = 60_000 * 5 // 5 分钟
+const FNG_INTERVAL_MS = 60_000 * 5
+const RSI_INTERVAL_MS = 60_000 * 2
+const ALTSEASON_INTERVAL_MS = 60_000 * 10
 
 export function useCryptoFearGreed(enabled: boolean) {
   const [data, setData] = useState<FearGreedResult | null>(null)
@@ -16,9 +24,46 @@ export function useCryptoFearGreed(enabled: boolean) {
       setData(result)
     }
     run()
-    const t = setInterval(run, INTERVAL_MS)
+    const t = setInterval(run, FNG_INTERVAL_MS)
     return () => clearInterval(t)
   }, [enabled])
 
   return data
+}
+
+export function useCryptoRSI(symbols: string[], enabled: boolean): RsiItem[] {
+  const [data, setData] = useState<RsiItem[]>([])
+
+  useEffect(() => {
+    if (!enabled || symbols.length === 0) {
+      setData([])
+      return
+    }
+    const run = async () => {
+      const list = await fetchCryptoRSI(symbols)
+      setData(list)
+    }
+    run()
+    const t = setInterval(run, RSI_INTERVAL_MS)
+    return () => clearInterval(t)
+  }, [enabled, symbols.join(',')])
+
+  return data
+}
+
+export function useAltcoinSeasonIndex(enabled: boolean): number | null {
+  const [index, setIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!enabled) return
+    const run = async () => {
+      const v = await fetchAltcoinSeasonIndex()
+      setIndex(v)
+    }
+    run()
+    const t = setInterval(run, ALTSEASON_INTERVAL_MS)
+    return () => clearInterval(t)
+  }, [enabled])
+
+  return index
 }

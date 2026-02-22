@@ -4,7 +4,7 @@ import { TickerRow as TickerRowComponent } from './TickerRow'
 import { KlineModal } from './KlineModal'
 import { useMarketOverview } from '../hooks/useMarketOverview'
 import { useUsIndex } from '../hooks/useUsIndex'
-import { useCryptoFearGreed } from '../hooks/useCryptoFearGreed'
+import { useCryptoFearGreed, useCryptoRSI, useAltcoinSeasonIndex } from '../hooks/useCryptoFearGreed'
 import { MarketOverviewPanel } from './MarketOverviewPanel'
 
 type TabId = 'us' | 'cn' | 'crypto'
@@ -52,6 +52,11 @@ export function Dashboard({
   const marketOverview = useMarketOverview(activeTab === 'cn')
   const usIndex = useUsIndex(apiKey)
   const cryptoFearGreed = useCryptoFearGreed(activeTab === 'crypto')
+  const cryptoRsiList = useCryptoRSI(
+    activeTab === 'crypto' ? cryptoList.map((r) => r.symbol) : [],
+    activeTab === 'crypto'
+  )
+  const altcoinSeasonIndex = useAltcoinSeasonIndex(activeTab === 'crypto')
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -225,6 +230,44 @@ export function Dashboard({
                   <span className="tabular-nums font-semibold w-10 text-center">{cryptoFearGreed.value}</span>
                   <span className="text-sm text-[var(--muted)]">{cryptoFearGreed.classification}</span>
                   <span className="text-xs text-[var(--muted)]">0=极度恐慌 100=极度贪婪，极端值可作逆向参考</span>
+                </div>
+              )}
+              {altcoinSeasonIndex != null && (
+                <div className="flex flex-wrap items-center gap-4 pt-1 border-t border-[var(--border)]/50">
+                  <span className="text-xs text-[var(--muted)]">山寨币季节指数</span>
+                  <span className="tabular-nums font-semibold w-10 text-center">{altcoinSeasonIndex}</span>
+                  <span className="text-xs text-[var(--muted)]">
+                    &gt;75=山寨季（山寨跑赢BTC） &lt;25=比特币季
+                  </span>
+                </div>
+              )}
+              {cryptoRsiList.length > 0 && (
+                <div className="pt-1 border-t border-[var(--border)]/50">
+                  <div className="text-xs text-[var(--muted)] mb-2">RSI(14) 热力图</div>
+                  <div className="flex flex-wrap gap-2">
+                    {cryptoRsiList.map(({ symbol, rsi }) => {
+                      const label = symbol.replace('USDT', '')
+                      const rsiNum = rsi ?? 0
+                      const bg =
+                        rsi == null
+                          ? 'bg-[var(--border)]'
+                          : rsiNum < 30
+                            ? 'bg-green-600/40 text-green-200'
+                            : rsiNum > 70
+                              ? 'bg-red-600/40 text-red-200'
+                              : 'bg-amber-600/30 text-amber-200'
+                      return (
+                        <div
+                          key={symbol}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded ${bg} text-sm`}
+                          title={rsi != null ? `RSI(14)=${rsi}，<30超卖 >70超买` : '计算中'}
+                        >
+                          <span className="font-medium">{label}</span>
+                          <span className="tabular-nums">{rsi != null ? rsi : '—'}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>
