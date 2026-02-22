@@ -63,39 +63,37 @@ npm run preview
 
 ## 分享与发布（给别人使用）
 
-### 方式一：分享仓库（给会跑代码的人）
+### 免费发布成网站（私人仓库也适用）—— 推荐 Vercel / Netlify
 
-- 把仓库设为 **Public** 或把对方加为 **Collaborator**，对方克隆后执行：
-  ```bash
-  git clone https://github.com/你的用户名/openquant.git
-  cd openquant
-  npm install
-  npm run dev
-  ```
-- 或直接发仓库链接，对方 Fork 后本地运行。
+**GitHub Pages 对私人仓库需付费**，用下面两种方式可以**免费**构建并发布，且**支持私人仓库**：
 
-### 方式二：发布成网站（任何人打开链接即用）—— GitHub Pages
+#### 用 Vercel（推荐，步骤最少）
 
-用 GitHub 自带的 **Pages** 能力，推代码后自动构建、发布成一个在线地址，别人点开就能用。
+1. 打开 [vercel.com](https://vercel.com)，用 GitHub 登录。
+2. 点击 **Add New… → Project**，选择你的**私人仓库**（如 `openquant`）。
+3. 保持默认即可（Framework 自动识别为 Vite）：
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. 点 **Deploy**，等一两分钟。
+5. 会得到一个地址：`https://你的项目名.vercel.app`，把链接发给别人即可打开使用。之后每次推送到 `main` 会自动重新部署。
 
-1. **开启 GitHub Pages**
-   - 仓库 → **Settings** → 左侧 **Pages**
-   - **Source** 选 **GitHub Actions**（不要选 Deploy from a branch）
+#### 用 Netlify
 
-2. **推送代码触发部署**
-   - 推送包含本仓库的 `.github/workflows/deploy-pages.yml` 到 `main` 分支
-   - 首次推送后到 **Actions** 里看是否有 “Deploy to GitHub Pages” 在跑，跑完即发布成功
+1. 打开 [netlify.com](https://netlify.com)，用 GitHub 登录。
+2. **Add new site → Import an existing project**，选 GitHub 后选择本仓库。
+3. 填写：
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist`
+4. 部署完成后会得到 `https://随机名.netlify.app`，可改自定义子域名。
 
-3. **访问地址**
-   - 发布成功后，在 **Settings → Pages** 里会显示站点地址，形如：
-   - `https://你的用户名.github.io/openquant/`（其中 `openquant` 为仓库名）
+以上两种都**不收费**，私人仓库也可用，构建出的站点可随意分享链接给别人用。
 
-说明：美股 K 线在浏览器直连可能因 Yahoo 限制出现 403，可让用户配置 Alpha Vantage Key 或主要使用 A 股/加密货币 K 线。
+---
 
-### 方式三：用 Vercel / Netlify（可选）
+### 其他方式
 
-- 把仓库导入 [Vercel](https://vercel.com) 或 [Netlify](https://netlify.com)，用默认配置即可自动构建并给一个 `xxx.vercel.app` / `xxx.netlify.app` 地址。
-- 无需改 `base`，适合想要独立域名或更快的 CDN 时使用。
+- **分享仓库**：把对方加为 Collaborator，对方 `git clone` 后 `npm install && npm run dev` 本地运行。
+- **GitHub Pages**：仅当仓库为 **Public** 时免费；若改为公开仓库，可用仓库里自带的 `.github/workflows/deploy-pages.yml` 自动部署到 `https://用户名.github.io/仓库名/`。
 
 ## 注意事项
 
