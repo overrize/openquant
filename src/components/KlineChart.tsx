@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { createChart, ColorType } from 'lightweight-charts'
+import type { CandlestickData, Time } from 'lightweight-charts'
 import type { KlineBar } from '../api/kline'
 
 interface KlineChartProps {
@@ -62,7 +63,7 @@ export function KlineChart({ data, height = 360 }: KlineChartProps) {
       try {
         chartRef.current.timeScale().applyOptions({ secondsVisible: isIntraday })
         const prevLen = dataLengthRef.current
-        seriesRef.current.setData(formatted)
+        seriesRef.current.setData(formatted as CandlestickData<Time>[])
         dataLengthRef.current = formatted.length
         if (formatted.length !== prevLen) {
           chartRef.current.timeScale().fitContent()
@@ -92,7 +93,7 @@ export function KlineChart({ data, height = 360 }: KlineChartProps) {
           borderColor: '#2d3a4f',
           timeVisible: true,
           secondsVisible: isIntraday,
-          rightBarSpacing: 12,
+          barSpacing: 12,
           tickMarkFormatter: (time: unknown) => {
             if (typeof time === 'object' && time !== null && 'year' in time && 'month' in time && 'day' in time) {
               const t = time as { year: number; month: number; day: number }
@@ -122,7 +123,7 @@ export function KlineChart({ data, height = 360 }: KlineChartProps) {
       seriesRef.current = candleSeries
 
       try {
-        candleSeries.setData(formatted)
+        candleSeries.setData(formatted as CandlestickData<Time>[])
         dataLengthRef.current = formatted.length
         chart.timeScale().fitContent()
       } catch (err) {

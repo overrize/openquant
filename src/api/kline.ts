@@ -12,6 +12,12 @@ export interface KlineBar {
   close: number
 }
 
+/** Yahoo chart API 单条 result 结构 */
+interface YahooChartResult {
+  timestamp?: number[]
+  indicators?: { quote?: Array<{ open?: number[]; high?: number[]; low?: number[]; close?: number[] }> }
+}
+
 /** Binance 支持的 K 线周期 */
 export type BinanceKlineInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w'
 
@@ -121,7 +127,7 @@ export async function fetchUSKlineYahoo(symbol: string, limit = 120): Promise<Kl
       logKline('Yahoo', 'got HTML not JSON', { symbol, snippet: text.slice(0, 150) })
       throw new Error('接口返回了 HTML 而非 JSON，请确认开发代理已生效并重启 dev 服务')
     }
-    const json = JSON.parse(text) as { chart?: { result?: unknown[] } }
+    const json = JSON.parse(text) as { chart?: { result?: YahooChartResult[] } }
     const result = json?.chart?.result?.[0]
     if (!result) {
       logKline('Yahoo', 'no result', { symbol, hasChart: !!json?.chart })
@@ -154,7 +160,7 @@ export async function fetchUSKlineYahoo(symbol: string, limit = 120): Promise<Kl
     logKline('Yahoo', 'ok', { symbol, bars: bars.length })
     return bars
   } catch (e) {
-    logKline('Yahoo', 'error', { symbol, err: e, message: e instanceof Error ? e.message : e, cause: e instanceof Error ? e.cause : undefined })
+    logKline('Yahoo', 'error', { symbol, err: e, message: e instanceof Error ? e.message : e, cause: e instanceof Error ? (e as Error & { cause?: unknown }).cause : undefined })
     throw e
   }
 }

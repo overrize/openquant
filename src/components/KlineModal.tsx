@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import type { TickerRow } from '../types'
 import {
   fetchUSKline,
@@ -71,7 +71,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
       log('start', { type, symbol: row.symbol, id: row.id })
       try {
         if (type === 'stock') {
-          let bars: { time: string; open: number; high: number; low: number; close: number }[] = []
+          let bars: KlineBar[] = []
           if (apiKey) {
             log('try Finnhub')
             bars = await fetchUSKline(row.symbol, apiKey)
@@ -103,7 +103,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
         } else if (type === 'cnstock') {
           const secid = row.id.replace('cnstock-', '')
           const ashareCode = secidToAshareCode(secid)
-          let bars: { time: string; open: number; high: number; low: number; close: number }[] = []
+          let bars: KlineBar[] = []
           try {
             log('fetch CN Tencent (Ashare)', ashareCode)
             bars = await fetchCNKlineTencent(ashareCode)
@@ -135,7 +135,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
           symbol: row.symbol,
           error: e,
           message: e instanceof Error ? e.message : String(e),
-          cause: e instanceof Error ? e.cause : undefined,
+          cause: e instanceof Error ? (e as Error & { cause?: unknown }).cause : undefined,
           stack: e instanceof Error ? e.stack : undefined,
         })
         setError(msg)
