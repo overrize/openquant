@@ -44,7 +44,7 @@ npm run preview
 | 类型     | 数据源        | 说明 |
 |----------|---------------|------|
 | 美股     | Finnhub       | 免费注册，WebSocket 实时成交 + REST 前收价 |
-| A股      | 东方财富网     | 无需 Key，轮询 push2.eastmoney.com 个股接口（约 4 秒刷新） |
+| A股      | 东方财富网     | 无需 Key，轮询 push2.eastmoney.com 个股接口（约 8 秒刷新）；K 线优先用 [Ashare](https://github.com/mpquant/Ashare) 同源（腾讯→新浪→东方财富） |
 | 加密货币 | Binance 公开流 | 无需 Key，直接连接 Binance WebSocket |
 
 ## 默认标的
@@ -59,7 +59,7 @@ npm run preview
 
 - Vite + React 18 + TypeScript
 - Tailwind CSS
-- Finnhub WebSocket / REST、东方财富 push2 接口、Binance WebSocket
+- Finnhub / Yahoo（美股 K 线）、腾讯+新浪+东方财富（A 股 K 线，兼容 [Ashare](https://github.com/mpquant/Ashare) 数据源）、Binance WebSocket
 
 ## 注意事项
 

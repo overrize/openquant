@@ -21,8 +21,25 @@ export interface CnStockSymbol {
   name?: string
 }
 
-export const STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'AMD']
-export const CRYPTO_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT']
+export const STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'AMD', 'JPM', 'V', 'JNJ', 'WMT', 'UNH', 'HD']
+/** 美股代码 -> 英文公司名（用于显示） */
+export const STOCK_NAMES: Record<string, string> = {
+  AAPL: 'Apple',
+  MSFT: 'Microsoft',
+  GOOGL: 'Alphabet (Google)',
+  AMZN: 'Amazon',
+  NVDA: 'NVIDIA',
+  META: 'Meta',
+  TSLA: 'Tesla',
+  AMD: 'AMD',
+  JPM: 'JPMorgan Chase',
+  V: 'Visa',
+  JNJ: 'Johnson & Johnson',
+  WMT: 'Walmart',
+  UNH: 'UnitedHealth',
+  HD: 'Home Depot',
+}
+export const CRYPTO_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'AVAXUSDT']
 
 /** 默认 A 股（沪市 1.xxx 深市 0.xxx）*/
 export const CN_STOCK_SYMBOLS: CnStockSymbol[] = [

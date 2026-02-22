@@ -1,0 +1,1 @@
+feat: K-line multi-interval, realtime/long-term tabs, A-share units, US rate limit, crypto live sync

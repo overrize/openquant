@@ -1,33 +1,43 @@
+/**
+ * A 股行情：东方财富 push2 接口
+ * - 价格单位：接口返回一般为「元」；若为「分」（1 元 = 100）则自动除以 100 转为元
+ * - 字段：f43 最新价，f60 昨收，f169 涨跌额（元），f170 涨跌幅（%）
+ */
 import { useEffect, useRef } from 'react'
 import type { TickerRow, CnStockSymbol } from '../types'
 
-/** 东方财富 push2 个股行情接口返回的 data 字段（部分） */
+/** api/qt/stock/get 返回的 data 字段（单位见文件头注释） */
 interface EastMoneyStockData {
-  f43?: number   // 最新价（部分接口为 *100）
-  f44?: number
-  f57?: number
-  f58?: number   // 涨跌幅
-  f60?: number   // 昨收
-  f169?: number  // 涨跌额
-  f170?: number  // 涨跌幅%
-  f171?: number
+  /** 最新价（单位：元，少数情况为分需/100） */
+  f43?: number
+  /** 昨收价（单位：元） */
+  f60?: number
+  /** 涨跌额（单位：元） */
+  f169?: number
+  /** 涨跌幅（单位：%，如 2.5 表示 +2.5%） */
+  f170?: number
   [key: string]: number | undefined
 }
 
 const EASTMONEY_API = 'https://push2.eastmoney.com/api/qt/stock/get'
-/** 请求字段：最新价、昨收、涨跌额、涨跌幅 等 */
-const FIELDS = 'f43,f44,f57,f58,f60,f169,f170,f171'
+const FIELDS = 'f43,f60,f169,f170'
 
-function parsePrice(v: number | undefined): number {
+/**
+ * 解析价格/涨跌额：东方财富 push2 接口常返回「分」（1 元 = 100 分）。
+ * 整数且在合理范围 [100, 1e8] 时按分转元；否则按元使用。
+ */
+function parsePriceYuan(v: number | undefined): number {
   if (v == null || Number.isNaN(v)) return 0
-  if (Math.abs(v) > 1e6) return v / 100
+  const abs = Math.abs(v)
+  if (Number.isInteger(v) && abs >= 100 && abs <= 1e8) return v / 100
   return v
 }
 
+/** A 股轮询间隔默认 8 秒（频率低于美股） */
 export function useCnStockQuotes(
   symbols: CnStockSymbol[],
   onQuotes: (updates: Partial<TickerRow>[]) => void,
-  intervalMs = 4000
+  intervalMs = 8000
 ) {
   const onQuotesRef = useRef(onQuotes)
   const prevPricesRef = useRef<Record<string, number>>({})
@@ -44,11 +54,16 @@ export function useCnStockQuotes(
         const data: EastMoneyStockData | undefined = json?.data
         if (!data) return null
 
-        const rawPrice = data.f43 ?? data.f44 ?? data.f57
-        const price = parsePrice(rawPrice)
-        const prevClose = parsePrice(data.f60)
-        const changePercent = data.f170 ?? data.f58
-        const change = data.f169 ?? (prevClose ? price - prevClose : undefined)
+        const price = parsePriceYuan(data.f43)
+        const prevClose = parsePriceYuan(data.f60)
+        const changeValRaw = data.f169
+        const changeVal = changeValRaw != null
+          ? parsePriceYuan(changeValRaw)
+          : (prevClose && price > 0 ? price - prevClose : undefined)
+        const changePercentVal =
+          prevClose && prevClose > 0 && changeVal != null
+            ? (changeVal / prevClose) * 100
+            : (data.f170 != null ? Number(data.f170) : undefined)
         const prev = prevPricesRef.current[s.secid]
         prevPricesRef.current[s.secid] = price
         const flash = prev != null && prev !== price ? (price > prev ? 'up' : 'down') : undefined
@@ -59,9 +74,9 @@ export function useCnStockQuotes(
           symbol: s.code,
           name: s.name,
           price,
-          prevClose: prevClose || undefined,
-          change,
-          changePercent: changePercent != null ? Number(changePercent) : undefined,
+          prevClose: prevClose > 0 ? prevClose : undefined,
+          change: changeVal,
+          changePercent: changePercentVal != null ? Number(changePercentVal) : undefined,
           lastUpdate: Date.now(),
           flash,
         }
