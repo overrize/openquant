@@ -183,12 +183,12 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
       : CRYPTO_INTERVALS_LONG.find((x) => x.value === cryptoInterval)?.label ?? cryptoInterval)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="bg-[var(--panel)] border border-[var(--border)] rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+        className="glass-card rounded-2xl shadow-card-lg w-full max-w-4xl max-h-[90vh] flex flex-col animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-[var(--border)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b border-[var(--border)]">
           <div className="flex items-center gap-3 flex-wrap">
             <h3 className="text-lg font-semibold text-[var(--text)]">
               {isCrypto ? `${intervalLabel ?? 'K 线'} · ${title}` : `日 K 线 · ${title}`}
@@ -236,14 +236,24 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--muted)] hover:text-[var(--text)] p-1 rounded"
+            className="text-[var(--muted)] hover:text-[var(--text)] p-1.5 rounded-lg hover:bg-white/5 transition-colors"
             aria-label="关闭"
           >
-            ✕
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
-        <div className="p-4 overflow-auto flex-1 min-h-0 min-w-0 flex flex-col">
-          {loading && <div className="text-[var(--muted)] py-8 text-center">加载中…</div>}
+        <div className="p-5 overflow-auto flex-1 min-h-0 min-w-0 flex flex-col">
+          {loading && (
+            <div className="text-[var(--muted)] py-8 text-center flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              加载中…
+            </div>
+          )}
           {error && (
             <div className="text-red-400 py-4 text-center">
               <div>{error}</div>

@@ -8,12 +8,19 @@ export function useCryptoPrices(
   onUpdate: (updates: Partial<TickerRow>[]) => void
 ) {
   const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimerRef = useRef<number | null>(null)
+  const manualCloseRef = useRef(false)
   const prevPricesRef = useRef<Record<string, number>>({})
   const onUpdateRef = useRef(onUpdate)
   onUpdateRef.current = onUpdate
 
   const connect = useCallback(() => {
     if (symbols.length === 0) return
+    manualCloseRef.current = false
+    if (reconnectTimerRef.current != null) {
+      window.clearTimeout(reconnectTimerRef.current)
+      reconnectTimerRef.current = null
+    }
     const streamNames = symbols.map((s) => `${s.toLowerCase()}@ticker`).join('/')
     const ws = new WebSocket(`${BINANCE_WS}?streams=${streamNames}`)
     wsRef.current = ws
@@ -46,7 +53,12 @@ export function useCryptoPrices(
 
     ws.onclose = () => {
       wsRef.current = null
-      setTimeout(connect, 3000)
+      if (manualCloseRef.current) return
+      if (reconnectTimerRef.current != null) return
+      reconnectTimerRef.current = window.setTimeout(() => {
+        reconnectTimerRef.current = null
+        if (!manualCloseRef.current) connect()
+      }, 3000)
     }
     ws.onerror = () => {}
   }, [symbols.join(',')])
@@ -54,6 +66,11 @@ export function useCryptoPrices(
   useEffect(() => {
     connect()
     return () => {
+      manualCloseRef.current = true
+      if (reconnectTimerRef.current != null) {
+        window.clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
+      }
       if (wsRef.current) {
         wsRef.current.close()
         wsRef.current = null

@@ -5,14 +5,19 @@ import { useStockPrices } from './hooks/useStockPrices'
 import { useStockQuotes } from './hooks/useStockQuotes'
 import { STOCK_SYMBOLS as DEFAULT_STOCKS, CRYPTO_SYMBOLS as DEFAULT_CRYPTO, CN_STOCK_SYMBOLS as DEFAULT_CN, STOCK_NAMES } from './types'
 import { useCnStockQuotes } from './hooks/useCnStockQuotes'
+import { useBot } from './hooks/useBot'
 import { Dashboard } from './components/Dashboard'
 import { Settings } from './components/Settings'
+import { DEFAULT_BOT_CONFIG } from './bot/types'
 
 const FINNHUB_KEY = 'finnhub_apikey'
 const ALPHA_VANTAGE_KEY = 'alpha_vantage_apikey'
 const LS_STOCKS = 'watch_stock_symbols'
 const LS_CRYPTO = 'watch_crypto_symbols'
 const LS_CN = 'watch_cn_symbols'
+const LLM_API_URL_KEY = 'bot_llm_api_url'
+const LLM_API_KEY = 'bot_llm_api_key'
+const BOT_CONFIG_KEY = 'bot_config'
 
 function loadJson<T>(key: string, fallback: T): T {
   try {
@@ -104,7 +109,37 @@ function App() {
 
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem(FINNHUB_KEY) || '')
   const [alphaVantageKey, setAlphaVantageKey] = useState<string>(() => localStorage.getItem(ALPHA_VANTAGE_KEY) || '')
+  const [llmApiUrl, setLlmApiUrl] = useState<string>(() => localStorage.getItem(LLM_API_URL_KEY) || '')
+  const [llmApiKey, setLlmApiKey] = useState<string>(() => localStorage.getItem(LLM_API_KEY) || '')
   const [showSettings, setShowSettings] = useState(false)
+
+  const [botConfig, setBotConfig] = useState(() => {
+    try {
+      const s = localStorage.getItem(BOT_CONFIG_KEY)
+      if (s) {
+        const parsed = JSON.parse(s) as Partial<typeof DEFAULT_BOT_CONFIG>
+        return { ...DEFAULT_BOT_CONFIG, ...parsed }
+      }
+    } catch {}
+    return { ...DEFAULT_BOT_CONFIG }
+  })
+  useEffect(() => {
+    localStorage.setItem(BOT_CONFIG_KEY, JSON.stringify(botConfig))
+  }, [botConfig])
+
+  const llmConfig = useMemo(() => {
+    if (!llmApiUrl?.trim() || !llmApiKey?.trim()) return null
+    return { apiUrl: llmApiUrl.trim(), apiKey: llmApiKey.trim() }
+  }, [llmApiUrl, llmApiKey])
+
+  const {
+    paperState: botPaperState,
+    running: botRunning,
+    lastSignal: botLastSignal,
+    error: botError,
+    start: botStart,
+    stop: botStop,
+  } = useBot(botConfig, llmConfig)
 
   const MAX_SPARK_POINTS = 24
   const [priceHistory, setPriceHistory] = useState<Record<string, number[]>>({})
@@ -155,6 +190,12 @@ function App() {
     setAlphaVantageKey(key)
     localStorage.setItem(ALPHA_VANTAGE_KEY, key)
   }, [])
+  const saveLlmConfig = useCallback((url: string, key: string) => {
+    setLlmApiUrl(url)
+    setLlmApiKey(key)
+    localStorage.setItem(LLM_API_URL_KEY, url)
+    localStorage.setItem(LLM_API_KEY, key)
+  }, [])
 
   const stockList = useMemo(
     () => stockSymbols.map((s) => tickers[`stock-${s}`]).filter(Boolean),
@@ -201,20 +242,34 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight text-[var(--text)]">
-          量化盯盘
-        </h1>
+    <div className="min-h-screen flex flex-col bg-mesh">
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass-card">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shadow-glow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+              <polyline points="16 7 22 7 22 13" />
+            </svg>
+          </div>
+          <h1 className="text-lg font-bold tracking-tight gradient-text">
+            OpenQuant
+          </h1>
+          <span className="text-xs text-[var(--muted)] hidden sm:inline ml-1">量化分析平台</span>
+        </div>
         <button
           type="button"
           onClick={() => setShowSettings(true)}
-          className="text-sm text-[var(--muted)] hover:text-[var(--text)] px-3 py-1.5 rounded border border-[var(--border)]"
+          className="btn-ghost flex items-center gap-2 text-sm"
         >
-          设置
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span className="hidden sm:inline">设置</span>
         </button>
       </header>
-      <main className="flex-1 p-4">
+
+      <main className="flex-1 p-4 sm:p-6">
         <Dashboard
           stockList={stockList}
           cryptoList={cryptoList}
@@ -222,6 +277,15 @@ function App() {
           priceHistory={priceHistory}
           apiKey={apiKey || null}
           alphaVantageKey={alphaVantageKey || null}
+          botConfig={botConfig}
+          onBotConfigChange={(c) => setBotConfig((prev) => ({ ...prev, ...c }))}
+          botPaperState={botPaperState}
+          botRunning={botRunning}
+          botLastSignal={botLastSignal}
+          botError={botError}
+          llmConfig={llmConfig}
+          onBotStart={botStart}
+          onBotStop={botStop}
           onAddStock={addStock}
           onRemoveStock={removeStock}
           onAddCrypto={addCrypto}
@@ -230,12 +294,16 @@ function App() {
           onRemoveCn={removeCn}
         />
       </main>
+
       {showSettings && (
         <Settings
           apiKey={apiKey}
           alphaVantageKey={alphaVantageKey}
+          llmApiUrl={llmApiUrl}
+          llmApiKey={llmApiKey}
           onSave={saveApiKey}
           onSaveAlphaVantage={saveAlphaVantageKey}
+          onSaveLlm={saveLlmConfig}
           onClose={() => setShowSettings(false)}
         />
       )}

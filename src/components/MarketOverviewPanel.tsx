@@ -1,6 +1,3 @@
-/**
- * 大盘全局视野：指数、市场情绪广度、行为经济学指标，参考截图 UI 持续展示
- */
 import type { IndexQuote, SentimentBreadth, BehaviorIndicators } from '../api/market'
 
 interface MarketOverviewPanelProps {
@@ -10,7 +7,6 @@ interface MarketOverviewPanelProps {
   loading: boolean
 }
 
-/** 是否有情绪广度（涨跌家数等），无则羊群/处置/注意力为默认 50 */
 function hasBreadth(sentiment: SentimentBreadth | null): boolean {
   return sentiment != null && sentiment.total > 0
 }
@@ -20,35 +16,61 @@ function formatPct(n: number): string {
   return `${sign}${n.toFixed(2)}%`
 }
 
+const BEHAVIOR_CONFIG = [
+  { key: 'herd' as const, label: '羊群效应', sub: '追涨/跟风', gradient: 'from-yellow-500 to-amber-500', text: 'text-yellow-400', bg: 'bg-yellow-500' },
+  { key: 'anchor' as const, label: '锚定效应', sub: '溢价参考', gradient: 'from-orange-500 to-red-400', text: 'text-orange-400', bg: 'bg-orange-500' },
+  { key: 'disposition' as const, label: '处置效应', sub: '惜售抗跌', gradient: 'from-emerald-500 to-green-400', text: 'text-green-400', bg: 'bg-green-500' },
+  { key: 'attention' as const, label: '注意力效应', sub: '吸金度', gradient: 'from-blue-500 to-cyan-400', text: 'text-blue-400', bg: 'bg-blue-500' },
+]
+
 export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: MarketOverviewPanelProps) {
   if (loading && indices.length === 0) {
     return (
-      <div className="p-6 text-center text-[var(--muted)]">
-        正在加载大盘数据…
+      <div className="p-8 text-center">
+        <div className="inline-flex items-center gap-2 text-[var(--muted)]">
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          正在加载大盘数据…
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-5 space-y-5">
+      {/* Indices */}
       <div>
-        <h4 className="text-sm font-medium text-[var(--muted)] mb-3">对应股市指数</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <h4 className="text-xs font-medium text-[var(--muted)] mb-3 uppercase tracking-wider flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          </svg>
+          股市指数
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {indices.map((idx) => {
             const isUp = idx.change >= 0
             return (
               <div
                 key={idx.secid}
-                className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4"
+                className="glass-card glass-card-hover rounded-xl p-4 transition-all duration-200"
               >
-                <div className="text-xs text-[var(--muted)] mb-1">{idx.name}</div>
-                <div className="text-2xl font-bold text-[var(--text)] tabular-nums">
-                  {idx.price.toFixed(2)}
-                </div>
-                <div
-                  className={`text-sm tabular-nums mt-1 ${isUp ? 'text-tick-up' : 'text-tick-down'}`}
-                >
-                  {isUp ? '+' : ''}{idx.change.toFixed(2)} {formatPct(idx.changePercent)}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-xs text-[var(--muted)] mb-1">{idx.name}</div>
+                    <div className="text-2xl font-bold font-mono text-[var(--text)] tracking-tight">
+                      {idx.price.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className={`text-right ${isUp ? 'text-tick-up' : 'text-tick-down'}`}>
+                    <div className="text-sm font-mono font-semibold">
+                      {formatPct(idx.changePercent)}
+                    </div>
+                    <div className="text-xs font-mono opacity-70">
+                      {isUp ? '+' : ''}{idx.change.toFixed(2)}
+                    </div>
+                  </div>
                 </div>
               </div>
             )
@@ -56,29 +78,35 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
         </div>
       </div>
 
+      {/* Sentiment */}
       <div>
-        <h4 className="text-sm font-medium text-[var(--muted)] mb-3">市场情绪广度</h4>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4">
+        <h4 className="text-xs font-medium text-[var(--muted)] mb-3 uppercase tracking-wider flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
+          </svg>
+          市场情绪广度
+        </h4>
+        <div className="glass-card rounded-xl p-4">
           {sentiment ? (
             <>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="text-tick-up">上涨: {sentiment.up}</span>
-                <span className="text-[var(--muted)]">平盘: {sentiment.flat}</span>
-                <span className="text-tick-down">下跌: {sentiment.down}</span>
-                <span className="text-tick-up">涨停: {sentiment.limitUp}</span>
-                <span className="text-tick-down">跌停: {sentiment.limitDown}</span>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm mb-3">
+                <span className="text-tick-up font-medium">上涨 {sentiment.up}</span>
+                <span className="text-[var(--muted)]">平盘 {sentiment.flat}</span>
+                <span className="text-tick-down font-medium">下跌 {sentiment.down}</span>
+                <span className="text-tick-up">涨停 {sentiment.limitUp}</span>
+                <span className="text-tick-down">跌停 {sentiment.limitDown}</span>
               </div>
-              <div className="mt-3 h-2 rounded-full overflow-hidden bg-[var(--panel)] flex">
+              <div className="h-2.5 rounded-full overflow-hidden bg-[var(--bg)] flex">
                 <div
-                  className="bg-tick-up transition-all"
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500 rounded-l-full"
                   style={{ width: `${(sentiment.up / sentiment.total) * 100}%` }}
                 />
                 <div
-                  className="bg-[var(--muted)] transition-all"
+                  className="bg-[var(--muted)]/50 transition-all duration-500"
                   style={{ width: `${(sentiment.flat / sentiment.total) * 100}%` }}
                 />
                 <div
-                  className="bg-tick-down transition-all"
+                  className="bg-gradient-to-r from-red-400 to-red-500 transition-all duration-500 rounded-r-full"
                   style={{ width: `${(sentiment.down / sentiment.total) * 100}%` }}
                 />
               </div>
@@ -89,43 +117,42 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
         </div>
       </div>
 
+      {/* Behavior */}
       <div>
-        <h4 className="text-sm font-medium text-[var(--muted)] mb-3">行为经济学指标</h4>
-        <p className="text-xs text-[var(--muted)] mb-2">
-          由指数与情绪广度实时推算，数值 0–100。无涨跌家数数据时，羊群/处置/注意力显示为 50（中性），仅锚定随指数波动变化。
-        </p>
+        <h4 className="text-xs font-medium text-[var(--muted)] mb-3 uppercase tracking-wider flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
+          </svg>
+          行为经济学指标
+        </h4>
         {!hasBreadth(sentiment) && (
-          <p className="text-xs text-amber-600/90 mb-2">当前无情绪广度数据，追涨意愿、惜售抗跌、吸金度为默认 50。</p>
+          <p className="text-xs text-amber-500/80 mb-2">当前无情绪广度数据，追涨意愿、惜售抗跌、吸金度为默认 50。</p>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { key: 'herd' as const, label: '羊群效应(追涨/跟风)', value: behavior.herd, color: 'text-yellow-400' },
-            { key: 'anchor' as const, label: '锚定效应(溢价参考)', value: behavior.anchor, color: 'text-orange-400' },
-            { key: 'disposition' as const, label: '处置效应(惜售抗跌)', value: behavior.disposition, color: 'text-green-400' },
-            { key: 'attention' as const, label: '注意力效应(吸金度)', value: behavior.attention, color: 'text-blue-400' },
-          ].map(({ key, label, value, color }) => (
+          {BEHAVIOR_CONFIG.map(({ key, label, sub, text, bg }) => (
             <div
               key={key}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-3 flex items-center justify-between"
+              className="glass-card glass-card-hover rounded-xl px-4 py-3 transition-all duration-200"
             >
-              <span className="text-sm text-[var(--text)]">{label}</span>
-              <div className="flex items-center gap-2">
-                <div className="w-16 h-1.5 rounded-full bg-[var(--panel)] overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${key === 'herd' ? 'bg-yellow-500' : key === 'anchor' ? 'bg-orange-500' : key === 'disposition' ? 'bg-green-500' : 'bg-blue-500'}`}
-                    style={{ width: `${value}%` }}
-                  />
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="text-sm font-medium text-[var(--text)]">{label}</span>
+                  <span className="text-xs text-[var(--muted)] ml-1.5">({sub})</span>
                 </div>
-                <span className={`tabular-nums font-medium w-8 text-right ${color}`}>{value}</span>
+                <span className={`font-mono font-bold text-lg ${text}`}>{behavior[key]}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-[var(--bg)] overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${bg} transition-all duration-700 ease-out`}
+                  style={{ width: `${behavior[key]}%`, opacity: 0.7 }}
+                />
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-3 text-xs text-[var(--muted)] space-y-1">
-          <p>· 羊群 = 50 + (上涨家数占比−0.5)×100；全涨→100(追涨强)，全跌→0(跟风卖)，各半→50</p>
-          <p>· 锚定 = 50 − |指数日涨跌幅%|×3；波动大→低(锚被打破)，波动小→高</p>
-          <p>· 处置 = 涨停/(涨停+跌停)×100；高=惜售强</p>
-          <p>· 注意力 = 上涨家数占比×100；高=资金关注偏多</p>
+        <div className="mt-3 text-xs text-[var(--muted)] space-y-0.5 opacity-70">
+          <p>· 羊群 = 50 + (上涨占比−0.5)×100 · 锚定 = 50 − |涨跌幅%|×3</p>
+          <p>· 处置 = 涨停/(涨停+跌停)×100 · 注意力 = 上涨占比×100</p>
         </div>
       </div>
     </div>

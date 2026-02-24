@@ -25,15 +25,10 @@ function formatChange(c: number | undefined): string {
 interface TickerRowProps {
   row: TickerRowType
   showName?: boolean
-  /** 是否多列：前收、涨跌额（用于美股/A股标签页） */
   showPrevShowChange?: boolean
-  /** 是否显示缩略 K 线列（美股因 Yahoo 403 暂不显示） */
   showSparkline?: boolean
-  /** 缩略 K 线用的近期价格序列 */
   sparkPoints?: number[]
-  /** 点击行时打开 K 线弹窗 */
   onRowClick?: (row: TickerRowType) => void
-  /** 点击删除时从自选移除 */
   onDelete?: () => void
 }
 
@@ -53,51 +48,63 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
   const isDown = (changePercent ?? 0) < 0
   const flashClass = flash === 'up' ? 'tick-flash-up' : flash === 'down' ? 'tick-flash-down' : ''
 
-  const symbolCell = showName && row.name ? `${row.symbol} ${row.name}` : row.symbol
+  const symbolCell = (
+    <div className="flex items-center gap-2">
+      <span className="font-mono font-semibold text-[var(--text)]">{row.symbol}</span>
+      {showName && row.name && (
+        <span className="text-xs text-[var(--muted)]">{row.name}</span>
+      )}
+    </div>
+  )
+
   const trProps = {
-    role: onRowClick ? 'button' : undefined,
+    role: onRowClick ? 'button' as const : undefined,
     onClick: onRowClick ? () => onRowClick(row) : undefined,
-    className: `border-b border-[var(--border)]/50 ${flashClass} ${onRowClick ? 'cursor-pointer hover:bg-white/5' : ''}`,
+    className: `border-b border-[var(--border)]/40 ${flashClass} transition-colors duration-150 ${onRowClick ? 'cursor-pointer hover:bg-[var(--panel-hover)]' : ''}`,
   }
 
   const deleteCell = onDelete ? (
-    <td className="py-2.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+    <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
         onClick={onDelete}
-        className="text-[var(--muted)] hover:text-red-400 text-sm px-1.5 py-0.5 rounded"
+        className="text-[var(--muted)] hover:text-red-400 transition-colors p-1 rounded-md hover:bg-red-500/10"
         title="从自选删除"
         aria-label="删除"
       >
-        删除
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
     </td>
   ) : (
-    <td className="py-2.5 px-3 w-10" />
+    <td className="py-3 px-4 w-10" />
   )
+
+  const changeColorClass = isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat'
 
   if (showPrevShowChange) {
     return (
       <tr {...trProps}>
-        <td className="py-2.5 px-3 font-medium text-[var(--text)]">{symbolCell}</td>
-        <td className="py-2.5 px-3 text-right tabular-nums">
+        <td className="py-3 px-4">{symbolCell}</td>
+        <td className="py-3 px-4 text-right font-mono tabular-nums text-[var(--text)]">
           {row.price > 0 ? formatPrice(row.price) : '—'}
         </td>
-        <td className="py-2.5 px-3 text-right tabular-nums text-[var(--muted)]">
+        <td className="py-3 px-4 text-right font-mono tabular-nums text-[var(--muted)]">
           {row.prevClose != null && row.prevClose > 0 ? formatPrice(row.prevClose) : '—'}
         </td>
-        <td className={`py-2.5 px-3 text-right tabular-nums ${
-          isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat'
-        }`}>
+        <td className={`py-3 px-4 text-right font-mono tabular-nums ${changeColorClass}`}>
           {formatChange(changeVal)}
         </td>
-        <td className={`py-2.5 px-3 text-right tabular-nums ${
-          isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat'
-        }`}>
-          {formatPercent(changePercent)}
+        <td className={`py-3 px-4 text-right font-mono tabular-nums font-medium ${changeColorClass}`}>
+          <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${
+            isUp ? 'bg-emerald-500/15' : isDown ? 'bg-red-500/15' : ''
+          }`}>
+            {formatPercent(changePercent)}
+          </span>
         </td>
         {showSparkline && (
-          <td className="py-2.5 px-3 text-center align-middle" onClick={(e) => e.stopPropagation()}>
+          <td className="py-3 px-4 text-center align-middle" onClick={(e) => e.stopPropagation()}>
             <Sparkline points={sparkPoints ?? []} width={80} height={28} />
           </td>
         )}
@@ -108,14 +115,16 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
 
   return (
     <tr {...trProps}>
-      <td className="py-2.5 px-3 font-medium text-[var(--text)]">{symbolCell}</td>
-      <td className="py-2.5 px-3 text-right tabular-nums">
+      <td className="py-3 px-4">{symbolCell}</td>
+      <td className="py-3 px-4 text-right font-mono tabular-nums text-[var(--text)]">
         {row.price > 0 ? formatPrice(row.price) : '—'}
       </td>
-      <td className={`py-2.5 px-3 text-right tabular-nums ${
-        isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat'
-      }`}>
-        {formatPercent(changePercent)}
+      <td className={`py-3 px-4 text-right font-mono tabular-nums font-medium ${changeColorClass}`}>
+        <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${
+          isUp ? 'bg-emerald-500/15' : isDown ? 'bg-red-500/15' : ''
+        }`}>
+          {formatPercent(changePercent)}
+        </span>
       </td>
       {deleteCell}
     </tr>

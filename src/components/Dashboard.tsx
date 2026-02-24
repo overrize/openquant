@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import type { TickerRow } from '../types'
+import type { BotConfig } from '../bot/types'
 import { TickerRow as TickerRowComponent } from './TickerRow'
 import { KlineModal } from './KlineModal'
+import { BotPanel } from './BotPanel'
+import { ResearchPanel } from './ResearchPanel'
 import { useMarketOverview, useMarketOverviewUs } from '../hooks/useMarketOverview'
 import { useCryptoFearGreed, useCryptoRSI, useAltcoinSeasonIndex } from '../hooks/useCryptoFearGreed'
 import { MarketOverviewPanel } from './MarketOverviewPanel'
+import type { LlmFactorConfig } from '../bot/llmFactor'
 
-type TabId = 'us' | 'cn' | 'crypto'
+type TabId = 'us' | 'cn' | 'crypto' | 'bot' | 'research'
 
 interface DashboardProps {
   stockList: TickerRow[]
@@ -15,6 +19,15 @@ interface DashboardProps {
   priceHistory: Record<string, number[]>
   apiKey: string | null
   alphaVantageKey: string | null
+  botConfig: BotConfig
+  onBotConfigChange: (c: Partial<BotConfig>) => void
+  botPaperState: import('../bot/types').PaperState | null
+  botRunning: boolean
+  botLastSignal: import('../bot/types').Signal | null
+  botError: string | null
+  llmConfig: LlmFactorConfig | null
+  onBotStart: () => void
+  onBotStop: () => void
   onAddStock: (symbol: string) => void
   onRemoveStock: (symbol: string) => void
   onAddCrypto: (symbol: string) => void
@@ -23,10 +36,43 @@ interface DashboardProps {
   onRemoveCn: (secid: string) => void
 }
 
-const TABS: { id: TabId; label: string; freq: string }[] = [
-  { id: 'us', label: '美股', freq: '实时 + 报价限频刷新' },
-  { id: 'cn', label: 'A股', freq: '约 8 秒刷新' },
-  { id: 'crypto', label: '加密货币', freq: '实时' },
+const TAB_ICONS: Record<TabId, JSX.Element> = {
+  us: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" />
+    </svg>
+  ),
+  cn: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  ),
+  crypto: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  bot: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="10" rx="2" /><circle cx="12" cy="5" r="2" /><path d="M12 7v4" /><line x1="8" y1="16" x2="8" y2="16" /><line x1="16" y1="16" x2="16" y2="16" />
+    </svg>
+  ),
+  research: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  ),
+}
+
+const TABS: { id: TabId; label: string; desc: string }[] = [
+  { id: 'us', label: '美股', desc: '实时行情' },
+  { id: 'cn', label: 'A股', desc: '约8s刷新' },
+  { id: 'crypto', label: '加密货币', desc: '实时推送' },
+  { id: 'bot', label: '自动交易', desc: '虚拟盘' },
+  { id: 'research', label: '研报分析', desc: '因子计算' },
 ]
 
 export function Dashboard({
@@ -35,6 +81,15 @@ export function Dashboard({
   cnStockList,
   apiKey,
   alphaVantageKey,
+  botConfig,
+  onBotConfigChange,
+  botPaperState,
+  botRunning,
+  botLastSignal,
+  botError,
+  llmConfig,
+  onBotStart,
+  onBotStop,
   onAddStock,
   onRemoveStock,
   onAddCrypto,
@@ -58,26 +113,35 @@ export function Dashboard({
   const altcoinSeasonIndex = useAltcoinSeasonIndex(activeTab === 'crypto')
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex border-b border-[var(--border)] gap-1 mb-4">
-        {TABS.map(({ id, label, freq }) => (
+    <div className="max-w-6xl mx-auto">
+      {/* Tab navigation */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+        {TABS.map(({ id, label, desc }) => (
           <button
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shrink-0 ${
               activeTab === id
-                ? 'bg-[var(--panel)] text-[var(--text)] border border-[var(--border)] border-b-transparent -mb-px'
-                : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/5'
+                ? 'bg-gradient-to-r from-blue-600/20 to-violet-600/20 text-[var(--text)] border border-blue-500/30 shadow-glow'
+                : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--panel)] border border-transparent'
             }`}
           >
-            {label}
-            <span className="ml-1.5 text-xs opacity-75">({freq})</span>
+            <span className={`transition-colors ${activeTab === id ? 'text-blue-400' : 'text-[var(--muted)] group-hover:text-[var(--text)]'}`}>
+              {TAB_ICONS[id]}
+            </span>
+            <div className="text-left">
+              <div>{label}</div>
+              <div className={`text-[10px] leading-tight ${activeTab === id ? 'text-blue-400/70' : 'text-[var(--muted)]/70'}`}>
+                {desc}
+              </div>
+            </div>
           </button>
         ))}
       </div>
 
-      <div className="bg-[var(--panel)] rounded-xl rounded-tl-none border border-[var(--border)] overflow-hidden">
+      {/* Tab content */}
+      <div className="glass-card rounded-2xl overflow-hidden shadow-card animate-fadeIn">
         {activeTab === 'us' && (
           <div>
             <div className="border-b border-[var(--border)]">
@@ -88,7 +152,7 @@ export function Dashboard({
                 loading={usMarketOverview.loading}
               />
             </div>
-            <div className="flex gap-2 px-4 py-2 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
               <input
                 type="text"
                 value={searchUs}
@@ -100,12 +164,12 @@ export function Dashboard({
                   }
                 }}
                 placeholder="输入美股代码添加，如 AAPL"
-                className="flex-1 px-3 py-1.5 rounded bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] placeholder-[var(--muted)] text-sm"
+                className="flex-1 input-field text-sm"
               />
               <button
                 type="button"
                 onClick={() => { onAddStock(searchUs); setSearchUs('') }}
-                className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                className="btn-primary"
               >
                 添加
               </button>
@@ -113,13 +177,13 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)]">
-                    <th className="py-2.5 px-3">代码 / 公司</th>
-                    <th className="py-2.5 px-3 text-right">最新价(美元)</th>
-                    <th className="py-2.5 px-3 text-right">前收(美元)</th>
-                    <th className="py-2.5 px-3 text-right">涨跌额(美元)</th>
-                    <th className="py-2.5 px-3 text-right">涨跌幅</th>
-                    <th className="py-2.5 px-3 w-10" />
+                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                    <th className="py-3 px-4 font-medium">代码 / 公司</th>
+                    <th className="py-3 px-4 text-right font-medium">最新价(USD)</th>
+                    <th className="py-3 px-4 text-right font-medium">前收(USD)</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌额</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
+                    <th className="py-3 px-4 w-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -150,7 +214,7 @@ export function Dashboard({
                 loading={marketOverview.loading}
               />
             </div>
-            <div className="flex gap-2 px-4 py-2 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
               <input
                 type="text"
                 value={searchCn}
@@ -162,12 +226,12 @@ export function Dashboard({
                   }
                 }}
                 placeholder="输入 A 股代码添加，如 600519"
-                className="flex-1 px-3 py-1.5 rounded bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] placeholder-[var(--muted)] text-sm"
+                className="flex-1 input-field text-sm"
               />
               <button
                 type="button"
                 onClick={() => { onAddCn(searchCn); setSearchCn('') }}
-                className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                className="btn-primary"
               >
                 添加
               </button>
@@ -175,14 +239,14 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)]">
-                    <th className="py-2.5 px-3">代码 / 名称</th>
-                    <th className="py-2.5 px-3 text-right">最新价(元)</th>
-                    <th className="py-2.5 px-3 text-right">前收(元)</th>
-                    <th className="py-2.5 px-3 text-right">涨跌额(元)</th>
-                    <th className="py-2.5 px-3 text-right">涨跌幅</th>
-                    <th className="py-2.5 px-3 text-center">K线</th>
-                    <th className="py-2.5 px-3 w-10" />
+                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                    <th className="py-3 px-4 font-medium">代码 / 名称</th>
+                    <th className="py-3 px-4 text-right font-medium">最新价(CNY)</th>
+                    <th className="py-3 px-4 text-right font-medium">前收(CNY)</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌额</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
+                    <th className="py-3 px-4 text-center font-medium">K线</th>
+                    <th className="py-3 px-4 w-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -206,61 +270,72 @@ export function Dashboard({
 
         {activeTab === 'crypto' && (
           <div>
-            <div className="px-4 py-3 border-b border-[var(--border)] space-y-2 bg-[var(--bg)]/50">
+            <div className="px-5 py-4 border-b border-[var(--border)] space-y-3 bg-[var(--bg)]/30">
               {cryptoList.some((r) => r.symbol === 'BTCUSDT') && (
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-xs text-[var(--muted)]">市场参考</span>
-                  <span className="text-lg font-semibold tabular-nums text-[var(--text)]">BTC (BTCUSDT)</span>
-                  <span className="tabular-nums">
-                    {(() => {
-                      const btc = cryptoList.find((r) => r.symbol === 'BTCUSDT')
-                      return btc?.price ? btc.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'
-                    })()}
-                  </span>
-                  <span className="text-sm text-[var(--muted)]">USDT</span>
+                  <span className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">市场参考</span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+                      <span className="text-xs font-bold text-amber-400">B</span>
+                    </span>
+                    <span className="text-lg font-semibold font-mono text-[var(--text)]">
+                      {(() => {
+                        const btc = cryptoList.find((r) => r.symbol === 'BTCUSDT')
+                        return btc?.price ? btc.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'
+                      })()}
+                    </span>
+                    <span className="text-xs text-[var(--muted)]">USDT</span>
+                  </div>
                 </div>
               )}
               {cryptoFearGreed && (
-                <div className="flex flex-wrap items-center gap-4 pt-1 border-t border-[var(--border)]/50">
-                  <span className="text-xs text-[var(--muted)]">行为经济学指标</span>
-                  <span className="text-sm font-medium text-[var(--text)]">恐慌贪婪指数</span>
-                  <span className="tabular-nums font-semibold w-10 text-center">{cryptoFearGreed.value}</span>
-                  <span className="text-sm text-[var(--muted)]">{cryptoFearGreed.classification}</span>
-                  <span className="text-xs text-[var(--muted)]">0=极度恐慌 100=极度贪婪，极端值可作逆向参考</span>
+                <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-[var(--border)]/50">
+                  <span className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">恐慌贪婪指数</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500/20 via-amber-500/20 to-green-500/20 flex items-center justify-center border border-[var(--border)]">
+                      <span className="font-mono font-bold text-sm">{cryptoFearGreed.value}</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-[var(--text)]">{cryptoFearGreed.classification}</div>
+                      <div className="text-xs text-[var(--muted)]">0=极度恐慌 100=极度贪婪</div>
+                    </div>
+                  </div>
                 </div>
               )}
               {altcoinSeasonIndex != null && (
-                <div className="flex flex-wrap items-center gap-4 pt-1 border-t border-[var(--border)]/50">
-                  <span className="text-xs text-[var(--muted)]">山寨币季节指数</span>
-                  <span className="tabular-nums font-semibold w-10 text-center">{altcoinSeasonIndex}</span>
-                  <span className="text-xs text-[var(--muted)]">
-                    &gt;75=山寨季（山寨跑赢BTC） &lt;25=比特币季
-                  </span>
+                <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-[var(--border)]/50">
+                  <span className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">山寨币季节指数</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm w-10 text-center">{altcoinSeasonIndex}</span>
+                    <span className="text-xs text-[var(--muted)]">
+                      &gt;75=山寨季 &lt;25=比特币季
+                    </span>
+                  </div>
                 </div>
               )}
               {cryptoRsiList.length > 0 && (
-                <div className="pt-1 border-t border-[var(--border)]/50">
-                  <div className="text-xs text-[var(--muted)] mb-2">RSI(14) 热力图</div>
+                <div className="pt-2 border-t border-[var(--border)]/50">
+                  <div className="text-xs font-medium text-[var(--muted)] mb-2 uppercase tracking-wider">RSI(14) 热力图</div>
                   <div className="flex flex-wrap gap-2">
                     {cryptoRsiList.map(({ symbol, rsi }) => {
                       const label = symbol.replace('USDT', '')
                       const rsiNum = rsi ?? 0
                       const bg =
                         rsi == null
-                          ? 'bg-[var(--border)]'
+                          ? 'bg-[var(--border)] text-[var(--muted)]'
                           : rsiNum < 30
-                            ? 'bg-green-600/40 text-green-200'
+                            ? 'bg-emerald-600/30 text-emerald-200 border border-emerald-500/30'
                             : rsiNum > 70
-                              ? 'bg-red-600/40 text-red-200'
-                              : 'bg-amber-600/30 text-amber-200'
+                              ? 'bg-red-600/30 text-red-200 border border-red-500/30'
+                              : 'bg-amber-600/20 text-amber-200 border border-amber-500/30'
                       return (
                         <div
                           key={symbol}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded ${bg} text-sm`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${bg} text-sm`}
                           title={rsi != null ? `RSI(14)=${rsi}，<30超卖 >70超买` : '计算中'}
                         >
-                          <span className="font-medium">{label}</span>
-                          <span className="tabular-nums">{rsi != null ? rsi : '—'}</span>
+                          <span className="font-medium text-xs">{label}</span>
+                          <span className="font-mono font-semibold text-xs">{rsi != null ? rsi : '—'}</span>
                         </div>
                       )
                     })}
@@ -268,7 +343,7 @@ export function Dashboard({
                 </div>
               )}
             </div>
-            <div className="flex gap-2 px-4 py-2 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
               <input
                 type="text"
                 value={searchCrypto}
@@ -280,12 +355,12 @@ export function Dashboard({
                   }
                 }}
                 placeholder="输入代号添加，如 BTC 或 BTCUSDT"
-                className="flex-1 px-3 py-1.5 rounded bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] placeholder-[var(--muted)] text-sm"
+                className="flex-1 input-field text-sm"
               />
               <button
                 type="button"
                 onClick={() => { onAddCrypto(searchCrypto); setSearchCrypto('') }}
-                className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                className="btn-primary"
               >
                 添加
               </button>
@@ -293,14 +368,14 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)]">
-                    <th className="py-2.5 px-3">交易对</th>
-                    <th className="py-2.5 px-3 text-right">最新价(USDT)</th>
-                    <th className="py-2.5 px-3 text-right">前收(USDT)</th>
-                    <th className="py-2.5 px-3 text-right">涨跌额(USDT)</th>
-                    <th className="py-2.5 px-3 text-right">涨跌幅</th>
-                    <th className="py-2.5 px-3 text-center">K线</th>
-                    <th className="py-2.5 px-3 w-10" />
+                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                    <th className="py-3 px-4 font-medium">交易对</th>
+                    <th className="py-3 px-4 text-right font-medium">最新价(USDT)</th>
+                    <th className="py-3 px-4 text-right font-medium">前收(USDT)</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌额</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
+                    <th className="py-3 px-4 text-center font-medium">K线</th>
+                    <th className="py-3 px-4 w-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -320,6 +395,27 @@ export function Dashboard({
           </div>
         )}
 
+        {activeTab === 'bot' && (
+          <div className="p-5">
+            <BotPanel
+              config={botConfig}
+              onConfigChange={onBotConfigChange}
+              paperState={botPaperState}
+              running={botRunning}
+              lastSignal={botLastSignal}
+              error={botError}
+              llmConfig={llmConfig}
+              onStart={onBotStart}
+              onStop={onBotStop}
+            />
+          </div>
+        )}
+
+        {activeTab === 'research' && (
+          <div className="p-5">
+            <ResearchPanel />
+          </div>
+        )}
       </div>
 
       {klineRow && (

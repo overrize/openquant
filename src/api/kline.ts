@@ -21,7 +21,7 @@ interface YahooChartResult {
 /** Binance 支持的 K 线周期 */
 export type BinanceKlineInterval = '1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w'
 
-const LOG = true
+const LOG = import.meta.env.DEV
 function logKline(tag: string, ...args: unknown[]) {
   if (LOG) console.log(`[Kline ${tag}]`, ...args)
 }
