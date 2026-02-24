@@ -21,6 +21,10 @@ export interface IndexQuote {
   changePercent: number
 }
 
+/**
+ * 东方财富指数接口与个股一致：f43/f60/f169 为「放大 100 倍」的数值（如 411741 表示 4117.41 点），
+ * f170 涨跌幅也为「放大 100 倍」（如 87 表示 0.87%）。需统一除以 100 后展示。
+ */
 export async function fetchCnIndexQuotes(): Promise<IndexQuote[]> {
   const list = [
     { secid: '1.000001', name: '上证指数' },
@@ -38,7 +42,12 @@ export async function fetchCnIndexQuotes(): Promise<IndexQuote[]> {
         const price = parsePriceYuan(d.f43)
         const prevClose = parsePriceYuan(d.f60)
         const change = d.f169 != null ? parsePriceYuan(d.f169) : price - prevClose
-        const changePercent = d.f170 ?? (prevClose ? (change / prevClose) * 100 : 0)
+        // f170 涨跌幅：东方财富指数常返回「0.01%」为单位（87 表示 0.87%）；绝对值≤20 时视为已是百分比（如 2.5）
+        const rawPct = d.f170 != null ? Number(d.f170) : null
+        const changePercent =
+          rawPct != null
+            ? (Math.abs(rawPct) <= 20 ? rawPct : rawPct / 100)
+            : (prevClose ? (change / prevClose) * 100 : 0)
         return { name, secid, price, prevClose, change, changePercent }
       } catch {
         return null
