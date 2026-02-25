@@ -46,7 +46,11 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
   const changeVal = row.change ?? (row.prevClose && row.price > 0 ? row.price - row.prevClose : undefined)
   const isUp = (changePercent ?? 0) > 0
   const isDown = (changePercent ?? 0) < 0
-  const flashClass = flash === 'up' ? 'tick-flash-up' : flash === 'down' ? 'tick-flash-down' : ''
+  const isCn = row.type === 'cnstock'
+  const flashClass =
+    flash === 'up' ? (isCn ? 'cn-flash-up' : 'tick-flash-up')
+    : flash === 'down' ? (isCn ? 'cn-flash-down' : 'tick-flash-down')
+    : ''
 
   const symbolCell = (
     <div className="flex items-center gap-2">
@@ -81,7 +85,12 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
     <td className="py-3 px-4 w-10" />
   )
 
-  const changeColorClass = isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat'
+  const changeColorClass = isCn
+    ? (isUp ? 'text-cn-up' : isDown ? 'text-cn-down' : 'text-cn-flat')
+    : (isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat')
+  const badgeClass = isCn
+    ? (isUp ? 'bg-red-500/15' : isDown ? 'bg-emerald-500/15' : '')
+    : (isUp ? 'bg-emerald-500/15' : isDown ? 'bg-red-500/15' : '')
 
   if (showPrevShowChange) {
     return (
@@ -97,9 +106,7 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
           {formatChange(changeVal)}
         </td>
         <td className={`py-3 px-4 text-right font-mono tabular-nums font-medium ${changeColorClass}`}>
-          <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${
-            isUp ? 'bg-emerald-500/15' : isDown ? 'bg-red-500/15' : ''
-          }`}>
+          <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${badgeClass}`}>
             {formatPercent(changePercent)}
           </span>
         </td>
@@ -120,9 +127,7 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
         {row.price > 0 ? formatPrice(row.price) : '—'}
       </td>
       <td className={`py-3 px-4 text-right font-mono tabular-nums font-medium ${changeColorClass}`}>
-        <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${
-          isUp ? 'bg-emerald-500/15' : isDown ? 'bg-red-500/15' : ''
-        }`}>
+        <span className={`inline-block px-2 py-0.5 rounded-md text-xs ${badgeClass}`}>
           {formatPercent(changePercent)}
         </span>
       </td>

@@ -1,26 +1,21 @@
 /**
  * A 股行情：东方财富 push2 接口
  * - 价格单位：接口返回一般为「元」；若为「分」（1 元 = 100）则自动除以 100 转为元
- * - 字段：f43 最新价，f60 昨收，f169 涨跌额（元），f170 涨跌幅（%）
+ * - 字段：f43 最新价，f60 昨收，f170 涨跌幅（0.01% 为单位时需 /100）；涨跌额由 最新价-昨收 计算以保证与价格一致
  */
 import { useEffect, useRef } from 'react'
 import type { TickerRow, CnStockSymbol } from '../types'
 
 /** api/qt/stock/get 返回的 data 字段（单位见文件头注释） */
 interface EastMoneyStockData {
-  /** 最新价（单位：元，少数情况为分需/100） */
   f43?: number
-  /** 昨收价（单位：元） */
   f60?: number
-  /** 涨跌额（单位：元） */
-  f169?: number
-  /** 涨跌幅（单位：%，如 2.5 表示 +2.5%） */
   f170?: number
   [key: string]: number | undefined
 }
 
 const EASTMONEY_API = 'https://push2.eastmoney.com/api/qt/stock/get'
-const FIELDS = 'f43,f60,f169,f170'
+const FIELDS = 'f43,f60,f170'
 
 /**
  * 解析价格/涨跌额：东方财富 push2 接口常返回「分」（1 元 = 100 分）。
@@ -56,14 +51,14 @@ export function useCnStockQuotes(
 
         const price = parsePriceYuan(data.f43)
         const prevClose = parsePriceYuan(data.f60)
-        const changeValRaw = data.f169
-        const changeVal = changeValRaw != null
-          ? parsePriceYuan(changeValRaw)
-          : (prevClose && price > 0 ? price - prevClose : undefined)
+        // 涨跌额统一用「最新价 - 昨收」，与价格单位一致，避免 f169 单位歧义（分/元混用）导致显示错误
+        const changeVal = prevClose != null && price > 0 ? price - prevClose : undefined
+        const rawPct = data.f170 != null ? Number(data.f170) : null
+        // f170 与指数一致：接口常为 0.01% 为单位（如 250 表示 2.5%）；绝对值≤20 时视为已是百分比
         const changePercentVal =
-          prevClose && prevClose > 0 && changeVal != null
-            ? (changeVal / prevClose) * 100
-            : (data.f170 != null ? Number(data.f170) : undefined)
+          rawPct != null
+            ? (Math.abs(rawPct) <= 20 ? rawPct : rawPct / 100)
+            : (prevClose && prevClose > 0 && changeVal != null ? (changeVal / prevClose) * 100 : undefined)
         const prev = prevPricesRef.current[s.secid]
         prevPricesRef.current[s.secid] = price
         const flash = prev != null && prev !== price ? (price > prev ? 'up' : 'down') : undefined

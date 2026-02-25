@@ -72,6 +72,22 @@ body {
   animation: tick-down 0.6s ease-out;
 }
 
+/* A股：红涨绿跌（与 tick 相反） */
+@keyframes cn-tick-up {
+  0% { background-color: rgba(239, 68, 68, 0.25); }
+  100% { background-color: transparent; }
+}
+@keyframes cn-tick-down {
+  0% { background-color: rgba(16, 185, 129, 0.25); }
+  100% { background-color: transparent; }
+}
+.cn-flash-up {
+  animation: cn-tick-up 0.6s ease-out;
+}
+.cn-flash-down {
+  animation: cn-tick-down 0.6s ease-out;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }

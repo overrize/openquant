@@ -342,6 +342,11 @@ export function Dashboard({
                   </div>
                 </div>
               )}
+              <div className="pt-2 border-t border-[var(--border)]/50">
+                <div className="text-xs text-[var(--muted)]">
+                  涨跌口径说明：加密货币“涨跌额/涨跌幅”基于 Binance 24h 滚动统计，参考价为 24h 开盘价。
+                </div>
+              </div>
             </div>
             <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
               <input
@@ -371,9 +376,9 @@ export function Dashboard({
                   <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
                     <th className="py-3 px-4 font-medium">交易对</th>
                     <th className="py-3 px-4 text-right font-medium">最新价(USDT)</th>
-                    <th className="py-3 px-4 text-right font-medium">前收(USDT)</th>
-                    <th className="py-3 px-4 text-right font-medium">涨跌额</th>
-                    <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
+                    <th className="py-3 px-4 text-right font-medium">24h开盘(USDT)</th>
+                    <th className="py-3 px-4 text-right font-medium">24h涨跌额(USDT)</th>
+                    <th className="py-3 px-4 text-right font-medium">24h涨跌幅</th>
                     <th className="py-3 px-4 text-center font-medium">K线</th>
                     <th className="py-3 px-4 w-10" />
                   </tr>

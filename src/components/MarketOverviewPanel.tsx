@@ -63,7 +63,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
                       {idx.price.toFixed(2)}
                     </div>
                   </div>
-                  <div className={`text-right ${isUp ? 'text-tick-up' : 'text-tick-down'}`}>
+                  <div className={`text-right ${isUp ? 'text-cn-up' : 'text-cn-down'}`}>
                     <div className="text-sm font-mono font-semibold">
                       {formatPct(idx.changePercent)}
                     </div>
@@ -90,15 +90,15 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
           {sentiment ? (
             <>
               <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm mb-3">
-                <span className="text-tick-up font-medium">上涨 {sentiment.up}</span>
+                <span className="text-cn-up font-medium">上涨 {sentiment.up}</span>
                 <span className="text-[var(--muted)]">平盘 {sentiment.flat}</span>
-                <span className="text-tick-down font-medium">下跌 {sentiment.down}</span>
-                <span className="text-tick-up">涨停 {sentiment.limitUp}</span>
-                <span className="text-tick-down">跌停 {sentiment.limitDown}</span>
+                <span className="text-cn-down font-medium">下跌 {sentiment.down}</span>
+                <span className="text-cn-up">涨停 {sentiment.limitUp}</span>
+                <span className="text-cn-down">跌停 {sentiment.limitDown}</span>
               </div>
               <div className="h-2.5 rounded-full overflow-hidden bg-[var(--bg)] flex">
                 <div
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500 rounded-l-full"
+                  className="bg-gradient-to-r from-red-500 to-red-400 transition-all duration-500 rounded-l-full"
                   style={{ width: `${(sentiment.up / sentiment.total) * 100}%` }}
                 />
                 <div
@@ -106,7 +106,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
                   style={{ width: `${(sentiment.flat / sentiment.total) * 100}%` }}
                 />
                 <div
-                  className="bg-gradient-to-r from-red-400 to-red-500 transition-all duration-500 rounded-r-full"
+                  className="bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-500 rounded-r-full"
                   style={{ width: `${(sentiment.down / sentiment.total) * 100}%` }}
                 />
               </div>

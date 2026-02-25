@@ -8,6 +8,7 @@ import {
   type ReportAnalysis,
   type ReportFactor,
 } from '../analysis/reportAnalyzer'
+import { fetchEastmoneyResearchByCode, type EastmoneyResearchItem } from '../api/research'
 
 const LS_REPORTS_KEY = 'research_reports'
 
@@ -257,20 +258,59 @@ export function ResearchPanel() {
   const [inputText, setInputText] = useState('')
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
+  const [eastmoneyCode, setEastmoneyCode] = useState('300750')
+  const [eastmoneyLoading, setEastmoneyLoading] = useState(false)
+  const [eastmoneyError, setEastmoneyError] = useState<string | null>(null)
+  const [eastmoneyList, setEastmoneyList] = useState<EastmoneyResearchItem[]>([])
+
+  const addAnalysis = useCallback((text: string) => {
+    const result = analyzeReport(text)
+    const next = [result, ...reports].slice(0, 20)
+    setReports(next)
+    saveReports(next)
+    setExpandedId(0)
+  }, [reports])
 
   const handleAnalyze = useCallback(() => {
     if (!inputText.trim()) return
     setAnalyzing(true)
     setTimeout(() => {
-      const result = analyzeReport(inputText)
-      const next = [result, ...reports].slice(0, 20)
-      setReports(next)
-      saveReports(next)
+      addAnalysis(inputText)
       setInputText('')
-      setExpandedId(0)
       setAnalyzing(false)
     }, 300)
-  }, [inputText, reports])
+  }, [addAnalysis, inputText])
+
+  const handleFetchEastmoney = useCallback(async () => {
+    const code = eastmoneyCode.trim().replace(/\D/g, '')
+    if (!code) return
+    setEastmoneyLoading(true)
+    setEastmoneyError(null)
+    try {
+      const list = await fetchEastmoneyResearchByCode(code, 8)
+      setEastmoneyList(list)
+      if (list.length === 0) {
+        setEastmoneyError('未拉取到内容，可能该代码近期无公开调研记录。')
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '东财数据拉取失败'
+      setEastmoneyError(msg)
+      setEastmoneyList([])
+    } finally {
+      setEastmoneyLoading(false)
+    }
+  }, [eastmoneyCode])
+
+  const handleAnalyzeEastmoneyItem = useCallback((item: EastmoneyResearchItem) => {
+    const text = [
+      `${item.name}(${item.code}) 机构调研纪要`,
+      `日期: ${item.noticeDate}`,
+      item.receiveObject ? `调研对象: ${item.receiveObject}` : '',
+      '',
+      item.content,
+    ].filter(Boolean).join('\n')
+    addAnalysis(text)
+  }, [addAnalysis])
 
   const handleLoadSample = useCallback(() => {
     setInputText(SAMPLE_REPORT)
@@ -286,6 +326,61 @@ export function ResearchPanel() {
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-base font-semibold text-[var(--text)]">东方财富数据源</h2>
+            <p className="text-xs text-[var(--muted)] mt-1">
+              输入股票代码，拉取东财机构调研内容并一键分析（第一版）
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={eastmoneyCode}
+            onChange={(e) => setEastmoneyCode(e.target.value)}
+            placeholder="股票代码，如 300750"
+            className="input-field flex-1 text-sm font-mono"
+          />
+          <button
+            type="button"
+            onClick={handleFetchEastmoney}
+            disabled={eastmoneyLoading}
+            className="btn-primary disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {eastmoneyLoading ? '拉取中...' : '拉取东财'}
+          </button>
+        </div>
+        {eastmoneyError && <p className="text-xs text-red-400 mt-2">{eastmoneyError}</p>}
+
+        {eastmoneyList.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {eastmoneyList.map((item) => (
+              <div key={item.id} className="glass-card rounded-lg p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-[var(--text)] truncate">
+                      {item.name} ({item.code}) · {item.noticeDate}
+                    </div>
+                    <div className="text-xs text-[var(--muted)] mt-1 line-clamp-2">
+                      {item.content.slice(0, 120)}...
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAnalyzeEastmoneyItem(item)}
+                    className="btn-ghost text-xs shrink-0"
+                  >
+                    一键分析
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="glass-card rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div>

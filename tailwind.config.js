@@ -16,6 +16,12 @@ export default {
           down: '#ef4444',
           flat: '#64748b',
         },
+        /** A股习惯：红涨绿跌 */
+        cn: {
+          up: '#ef4444',
+          down: '#10b981',
+          flat: '#64748b',
+        },
         surface: {
           DEFAULT: '#151d2e',
           hover: '#1a2540',
