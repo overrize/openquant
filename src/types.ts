@@ -1,4 +1,4 @@
-export type AssetType = 'stock' | 'crypto' | 'cnstock'
+export type AssetType = 'stock' | 'crypto' | 'cnstock' | 'commodity'
 
 export interface TickerRow {
   id: string
@@ -40,6 +40,20 @@ export const STOCK_NAMES: Record<string, string> = {
   HD: 'Home Depot',
 }
 export const CRYPTO_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'AVAXUSDT']
+
+/** 贵金属·原油：美股 ETF 代码，用 Finnhub 拉行情 */
+export const COMMODITY_SYMBOLS = ['GLD', 'SLV', 'USO', 'IAU', 'PPLT']
+/** 贵金属/大宗名称（GLD=黄金, SLV=白银, USO=原油 等） */
+export const COMMODITY_NAMES: Record<string, string> = {
+  GLD: '黄金(SPDR)',
+  SLV: '白银(iShares)',
+  USO: '原油(USO)',
+  IAU: '黄金(iShares)',
+  PPLT: '铂金',
+  BNO: '布伦特原油',
+  CPER: '铜',
+  UNG: '天然气',
+}
 
 /** 默认 A 股（沪市 1.xxx 深市 0.xxx）*/
 export const CN_STOCK_SYMBOLS: CnStockSymbol[] = [

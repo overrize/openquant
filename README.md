@@ -7,6 +7,7 @@
 - **美股**：通过 Finnhub WebSocket 实时成交价，REST 拉取前收价计算涨跌幅
 - **A股**：通过东方财富网（push2.eastmoney.com）接口轮询实时行情，无需 API Key
 - **加密货币**：通过 Binance WebSocket 实时价格与涨跌幅（无需 API Key）
+- **贵金属·原油**：黄金/白银/原油等（美股 ETF：GLD、SLV、USO 等，需 Finnhub Key）
 - 涨跌颜色与价格更新闪烁效果
 - 深色仪表盘风格
 
@@ -52,8 +53,9 @@ npm run preview
 - **美股**：AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, AMD
 - **A股**：贵州茅台、中国平安、招商银行、五粮液、比亚迪、宁德时代（可在 `src/types.ts` 的 `CN_STOCK_SYMBOLS` 中修改，格式为 `{ secid: '1.600519', code: '600519', name: '贵州茅台' }`，沪市 secid 以 1. 开头，深市以 0. 开头）
 - **加密货币**：BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT
+- **贵金属·原油**：GLD(黄金)、SLV(白银)、USO(原油)、IAU、PPLT（见 `COMMODITY_SYMBOLS`）
 
-修改 `src/types.ts` 中的 `STOCK_SYMBOLS`、`CN_STOCK_SYMBOLS` 与 `CRYPTO_SYMBOLS` 可自定义列表。
+修改 `src/types.ts` 中的 `STOCK_SYMBOLS`、`CN_STOCK_SYMBOLS`、`CRYPTO_SYMBOLS` 与 `COMMODITY_SYMBOLS` 可自定义列表。做成 App 的路线图见 `docs/APP_PLAN.md`。
 
 ## 技术栈
 

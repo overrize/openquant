@@ -70,7 +70,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
       const log = (tag: string, ...args: unknown[]) => console.log('[KlineModal]', tag, ...args)
       log('start', { type, symbol: row.symbol, id: row.id })
       try {
-        if (type === 'stock') {
+        if (type === 'stock' || type === 'commodity') {
           let bars: KlineBar[] = []
           if (apiKey) {
             log('try Finnhub')

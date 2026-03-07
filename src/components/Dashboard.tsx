@@ -5,17 +5,19 @@ import { TickerRow as TickerRowComponent } from './TickerRow'
 import { KlineModal } from './KlineModal'
 import { BotPanel } from './BotPanel'
 import { ResearchPanel } from './ResearchPanel'
+import { TenderOfferPanel } from './TenderOfferPanel'
 import { useMarketOverview, useMarketOverviewUs } from '../hooks/useMarketOverview'
 import { useCryptoFearGreed, useCryptoRSI, useAltcoinSeasonIndex } from '../hooks/useCryptoFearGreed'
 import { MarketOverviewPanel } from './MarketOverviewPanel'
 import type { LlmFactorConfig } from '../bot/llmFactor'
 
-type TabId = 'us' | 'cn' | 'crypto' | 'bot' | 'research'
+type TabId = 'us' | 'cn' | 'crypto' | 'commodity' | 'bot' | 'research' | 'tender'
 
 interface DashboardProps {
   stockList: TickerRow[]
   cryptoList: TickerRow[]
   cnStockList: TickerRow[]
+  commodityList: TickerRow[]
   priceHistory: Record<string, number[]>
   apiKey: string | null
   alphaVantageKey: string | null
@@ -28,12 +30,19 @@ interface DashboardProps {
   llmConfig: LlmFactorConfig | null
   onBotStart: () => void
   onBotStop: () => void
+  tenderOfferList: import('../api/tenderOffer').TenderOfferItem[]
+  tenderOfferLoading: boolean
+  tenderOfferError: string | null
+  onTenderOfferRefreshFilings: () => void
+  onTenderOfferRefreshPrices: () => void
   onAddStock: (symbol: string) => void
   onRemoveStock: (symbol: string) => void
   onAddCrypto: (symbol: string) => void
   onRemoveCrypto: (symbol: string) => void
   onAddCn: (code: string) => void
   onRemoveCn: (secid: string) => void
+  onAddCommodity: (symbol: string) => void
+  onRemoveCommodity: (symbol: string) => void
 }
 
 const TAB_ICONS: Record<TabId, JSX.Element> = {
@@ -65,14 +74,27 @@ const TAB_ICONS: Record<TabId, JSX.Element> = {
       <line x1="16" y1="17" x2="8" y2="17" />
     </svg>
   ),
+  tender: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  ),
+  commodity: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L9 8H3l3 6 6-12 3 6h6l-3 6-3-6z" />
+    </svg>
+  ),
 }
 
 const TABS: { id: TabId; label: string; desc: string }[] = [
   { id: 'us', label: '美股', desc: '实时行情' },
   { id: 'cn', label: 'A股', desc: '约8s刷新' },
   { id: 'crypto', label: '加密货币', desc: '实时推送' },
+  { id: 'commodity', label: '贵金属·原油', desc: '黄金/白银/原油' },
   { id: 'bot', label: '自动交易', desc: '虚拟盘' },
   { id: 'research', label: '研报分析', desc: '因子计算' },
+  { id: 'tender', label: '要约收购', desc: '套利扫描' },
 ]
 
 export function Dashboard({
@@ -90,6 +112,14 @@ export function Dashboard({
   llmConfig,
   onBotStart,
   onBotStop,
+  tenderOfferList,
+  tenderOfferLoading,
+  tenderOfferError,
+  onTenderOfferRefreshFilings,
+  onTenderOfferRefreshPrices,
+  commodityList,
+  onAddCommodity,
+  onRemoveCommodity,
   onAddStock,
   onRemoveStock,
   onAddCrypto,
@@ -103,6 +133,7 @@ export function Dashboard({
   const [searchUs, setSearchUs] = useState('')
   const [searchCrypto, setSearchCrypto] = useState('')
   const [searchCn, setSearchCn] = useState('')
+  const [searchCommodity, setSearchCommodity] = useState('')
   const marketOverview = useMarketOverview(activeTab === 'cn')
   const usMarketOverview = useMarketOverviewUs(apiKey, activeTab === 'us')
   const cryptoFearGreed = useCryptoFearGreed(activeTab === 'crypto')
@@ -400,6 +431,67 @@ export function Dashboard({
           </div>
         )}
 
+        {activeTab === 'commodity' && (
+          <div>
+            <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg)]/30">
+              <p className="text-sm text-[var(--muted)]">
+                黄金、白银、原油等以美股 ETF 行情展示（如 GLD/SLV/USO），需在设置中配置 Finnhub API Key。
+              </p>
+            </div>
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
+              <input
+                type="text"
+                value={searchCommodity}
+                onChange={(e) => setSearchCommodity(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    onAddCommodity(searchCommodity)
+                    setSearchCommodity('')
+                  }
+                }}
+                placeholder="输入代码添加，如 GLD SLV USO"
+                className="flex-1 input-field text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => { onAddCommodity(searchCommodity); setSearchCommodity('') }}
+                className="btn-primary"
+              >
+                添加
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                    <th className="py-3 px-4 font-medium">名称 / 代码</th>
+                    <th className="py-3 px-4 text-right font-medium">最新价(美元)</th>
+                    <th className="py-3 px-4 text-right font-medium">前收(美元)</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌额(美元)</th>
+                    <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
+                    <th className="py-3 px-4 text-center font-medium">K线</th>
+                    <th className="py-3 px-4 w-10" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {commodityList.map((row) => (
+                    <TickerRowComponent
+                      key={row.id}
+                      row={row}
+                      showName
+                      showPrevShowChange
+                      showSparkline={false}
+                      sparkPoints={priceHistory[row.id]}
+                      onRowClick={setKlineRow}
+                      onDelete={() => onRemoveCommodity(row.symbol)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'bot' && (
           <div className="p-5">
             <BotPanel
@@ -420,6 +512,17 @@ export function Dashboard({
           <div className="p-5">
             <ResearchPanel />
           </div>
+        )}
+
+        {activeTab === 'tender' && (
+          <TenderOfferPanel
+            list={tenderOfferList}
+            loading={tenderOfferLoading}
+            error={tenderOfferError}
+            hasFinnhub={!!apiKey}
+            onRefreshFilings={onTenderOfferRefreshFilings}
+            onRefreshPrices={onTenderOfferRefreshPrices}
+          />
         )}
       </div>
 

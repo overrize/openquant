@@ -3,9 +3,10 @@ import type { TickerRow, CnStockSymbol } from './types'
 import { useCryptoPrices } from './hooks/useCryptoPrices'
 import { useStockPrices } from './hooks/useStockPrices'
 import { useStockQuotes } from './hooks/useStockQuotes'
-import { STOCK_SYMBOLS as DEFAULT_STOCKS, CRYPTO_SYMBOLS as DEFAULT_CRYPTO, CN_STOCK_SYMBOLS as DEFAULT_CN, STOCK_NAMES } from './types'
+import { STOCK_SYMBOLS as DEFAULT_STOCKS, CRYPTO_SYMBOLS as DEFAULT_CRYPTO, CN_STOCK_SYMBOLS as DEFAULT_CN, COMMODITY_SYMBOLS as DEFAULT_COMMODITY, STOCK_NAMES, COMMODITY_NAMES } from './types'
 import { useCnStockQuotes } from './hooks/useCnStockQuotes'
 import { useBot } from './hooks/useBot'
+import { useTenderOffers } from './hooks/useTenderOffers'
 import { Dashboard } from './components/Dashboard'
 import { Settings } from './components/Settings'
 import { DEFAULT_BOT_CONFIG } from './bot/types'
@@ -15,6 +16,7 @@ const ALPHA_VANTAGE_KEY = 'alpha_vantage_apikey'
 const LS_STOCKS = 'watch_stock_symbols'
 const LS_CRYPTO = 'watch_crypto_symbols'
 const LS_CN = 'watch_cn_symbols'
+const LS_COMMODITY = 'watch_commodity_symbols'
 const LLM_API_URL_KEY = 'bot_llm_api_url'
 const LLM_API_KEY = 'bot_llm_api_key'
 const BOT_CONFIG_KEY = 'bot_config'
@@ -37,6 +39,9 @@ function App() {
   const [cnSymbols, setCnSymbols] = useState<CnStockSymbol[]>(() =>
     loadJson<CnStockSymbol[]>(LS_CN, DEFAULT_CN)
   )
+  const [commoditySymbols, setCommoditySymbols] = useState<string[]>(() =>
+    loadJson<string[]>(LS_COMMODITY, DEFAULT_COMMODITY)
+  )
 
   useEffect(() => {
     localStorage.setItem(LS_STOCKS, JSON.stringify(stockSymbols))
@@ -47,12 +52,16 @@ function App() {
   useEffect(() => {
     localStorage.setItem(LS_CN, JSON.stringify(cnSymbols))
   }, [cnSymbols])
+  useEffect(() => {
+    localStorage.setItem(LS_COMMODITY, JSON.stringify(commoditySymbols))
+  }, [commoditySymbols])
 
   const buildTickers = useCallback(
     (
       stocks: string[],
       cryptos: string[],
       cns: CnStockSymbol[],
+      commodities: string[],
       prev: Record<string, TickerRow> = {}
     ) => {
       const next = { ...prev }
@@ -88,6 +97,19 @@ function App() {
             lastUpdate: 0,
           }
       })
+      commodities.forEach((s) => {
+        const id = `commodity-${s}`
+        ids.add(id)
+        if (!next[id])
+          next[id] = {
+            id,
+            type: 'commodity',
+            symbol: s,
+            name: COMMODITY_NAMES[s],
+            price: 0,
+            lastUpdate: 0,
+          }
+      })
       Object.keys(next).forEach((id) => {
         if (!ids.has(id)) delete next[id]
       })
@@ -100,12 +122,13 @@ function App() {
     buildTickers(
       loadJson<string[]>(LS_STOCKS, DEFAULT_STOCKS),
       loadJson<string[]>(LS_CRYPTO, DEFAULT_CRYPTO),
-      loadJson<CnStockSymbol[]>(LS_CN, DEFAULT_CN)
+      loadJson<CnStockSymbol[]>(LS_CN, DEFAULT_CN),
+      loadJson<string[]>(LS_COMMODITY, DEFAULT_COMMODITY)
     )
   )
   useEffect(() => {
-    setTickers((prev) => buildTickers(stockSymbols, cryptoSymbols, cnSymbols, prev))
-  }, [stockSymbols, cryptoSymbols, cnSymbols, buildTickers])
+    setTickers((prev) => buildTickers(stockSymbols, cryptoSymbols, cnSymbols, commoditySymbols, prev))
+  }, [stockSymbols, cryptoSymbols, cnSymbols, commoditySymbols, buildTickers])
 
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem(FINNHUB_KEY) || '')
   const [alphaVantageKey, setAlphaVantageKey] = useState<string>(() => localStorage.getItem(ALPHA_VANTAGE_KEY) || '')
@@ -140,6 +163,14 @@ function App() {
     start: botStart,
     stop: botStop,
   } = useBot(botConfig, llmConfig)
+
+  const {
+    list: tenderOfferList,
+    loading: tenderOfferLoading,
+    error: tenderOfferError,
+    refreshFilings: onTenderOfferRefreshFilings,
+    refreshPrices: onTenderOfferRefreshPrices,
+  } = useTenderOffers(apiKey || null)
 
   const MAX_SPARK_POINTS = 24
   const [priceHistory, setPriceHistory] = useState<Record<string, number[]>>({})
@@ -179,6 +210,8 @@ function App() {
 
   useStockQuotes(apiKey || null, stockSymbols, mergeUpdates)
   useStockPrices(apiKey || null, stockSymbols, mergeUpdates)
+  useStockQuotes(apiKey || null, commoditySymbols, mergeUpdates, { idPrefix: 'commodity', assetType: 'commodity' })
+  useStockPrices(apiKey || null, commoditySymbols, mergeUpdates, { idPrefix: 'commodity', assetType: 'commodity' })
   useCryptoPrices(cryptoSymbols, mergeUpdates)
   useCnStockQuotes(cnSymbols, mergeUpdates)
 
@@ -208,6 +241,10 @@ function App() {
   const cnStockList = useMemo(
     () => cnSymbols.map((s) => tickers[`cnstock-${s.secid}`]).filter(Boolean),
     [tickers, cnSymbols]
+  )
+  const commodityList = useMemo(
+    () => commoditySymbols.map((s) => tickers[`commodity-${s}`]).filter(Boolean),
+    [tickers, commoditySymbols]
   )
 
   const addStock = useCallback((symbol: string) => {
@@ -239,6 +276,15 @@ function App() {
   }, [cnSymbols])
   const removeCn = useCallback((secid: string) => {
     setCnSymbols((prev) => prev.filter((x) => x.secid !== secid))
+  }, [])
+
+  const addCommodity = useCallback((symbol: string) => {
+    const s = symbol.trim().toUpperCase()
+    if (!s || commoditySymbols.includes(s)) return
+    setCommoditySymbols((prev) => [...prev, s])
+  }, [commoditySymbols])
+  const removeCommodity = useCallback((symbol: string) => {
+    setCommoditySymbols((prev) => prev.filter((x) => x !== symbol))
   }, [])
 
   return (
@@ -286,12 +332,20 @@ function App() {
           llmConfig={llmConfig}
           onBotStart={botStart}
           onBotStop={botStop}
+          tenderOfferList={tenderOfferList}
+          tenderOfferLoading={tenderOfferLoading}
+          tenderOfferError={tenderOfferError}
+          onTenderOfferRefreshFilings={onTenderOfferRefreshFilings}
+          onTenderOfferRefreshPrices={onTenderOfferRefreshPrices}
           onAddStock={addStock}
           onRemoveStock={removeStock}
           onAddCrypto={addCrypto}
           onRemoveCrypto={removeCrypto}
           onAddCn={addCn}
           onRemoveCn={removeCn}
+          commodityList={commodityList}
+          onAddCommodity={addCommodity}
+          onRemoveCommodity={removeCommodity}
         />
       </main>
 

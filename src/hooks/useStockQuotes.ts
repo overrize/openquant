@@ -7,8 +7,11 @@ const DELAY_BETWEEN_REQUESTS_MS = 1100
 export function useStockQuotes(
   apiKey: string | null,
   symbols: string[],
-  onQuotes: (updates: Partial<TickerRow>[]) => void
+  onQuotes: (updates: Partial<TickerRow>[]) => void,
+  options?: { idPrefix?: string; assetType?: TickerRow['type'] }
 ) {
+  const idPrefix = options?.idPrefix ?? 'stock'
+  const assetType = options?.assetType ?? 'stock'
   const onQuotesRef = useRef(onQuotes)
   onQuotesRef.current = onQuotes
 
@@ -36,8 +39,8 @@ export function useStockQuotes(
           if (!cancelled) {
             onQuotesRef.current([
               {
-                id: `stock-${s}`,
-                type: 'stock',
+                id: `${idPrefix}-${s}`,
+                type: assetType,
                 symbol: s,
                 price: c,
                 prevClose: pc,
@@ -68,5 +71,5 @@ export function useStockQuotes(
     return () => {
       cancelled = true
     }
-  }, [apiKey, symbols.join(',')])
+  }, [apiKey, symbols.join(','), idPrefix, assetType])
 }

@@ -6,8 +6,11 @@ const FINNHUB_WS = 'wss://ws.finnhub.io'
 export function useStockPrices(
   apiKey: string | null,
   symbols: string[],
-  onUpdate: (updates: Partial<TickerRow>[]) => void
+  onUpdate: (updates: Partial<TickerRow>[]) => void,
+  options?: { idPrefix?: string; assetType?: TickerRow['type'] }
 ) {
+  const idPrefix = options?.idPrefix ?? 'stock'
+  const assetType = options?.assetType ?? 'stock'
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<number | null>(null)
   const manualCloseRef = useRef(false)
@@ -42,8 +45,8 @@ export function useStockPrices(
           prevPricesRef.current[symbol] = price
           const flash = prev != null ? (price > prev ? 'up' : price < prev ? 'down' : undefined) : undefined
           onUpdateRef.current([{
-            id: `stock-${symbol}`,
-            type: 'stock',
+            id: `${idPrefix}-${symbol}`,
+            type: assetType,
             symbol,
             price,
             lastUpdate: Date.now(),
@@ -65,7 +68,7 @@ export function useStockPrices(
       }, 5000)
     }
     ws.onerror = () => {}
-  }, [apiKey, symbols.join(',')])
+  }, [apiKey, symbols.join(','), idPrefix, assetType])
 
   useEffect(() => {
     connect()
