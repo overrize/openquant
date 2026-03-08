@@ -1,0 +1,23 @@
+diff --git a/node_modules/@capacitor/android/capacitor/build.gradle b/node_modules/@capacitor/android/capacitor/build.gradle
+index 6ece3ed..b83cfcf 100644
+--- a/node_modules/@capacitor/android/capacitor/build.gradle
++++ b/node_modules/@capacitor/android/capacitor/build.gradle
+@@ -14,14 +14,12 @@ ext {
+ 
+ buildscript {
+     repositories {
+-        google()
+-        mavenCentral()
+-        maven {
+-            url = "https://plugins.gradle.org/m2/"
+-        }
++        maven { url 'https://maven.aliyun.com/repository/google' }
++        maven { url 'https://maven.aliyun.com/repository/public' }
++        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+     }
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:8.13.0'
++        classpath 'com.android.tools.build:gradle:8.9.1'
+ 
+         if (System.getenv("CAP_PUBLISH") == "true") {
+             classpath 'io.github.gradle-nexus:publish-plugin:1.3.0'

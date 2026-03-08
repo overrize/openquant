@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OpenQuant</string>
+    <string name="title_activity_main">OpenQuant</string>
+    <string name="package_name">com.openquant.app</string>
+    <string name="custom_url_scheme">com.openquant.app</string>
+</resources>

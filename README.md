@@ -49,6 +49,31 @@ npm run preview
 
 无需打包或上架应用商店，安装后即可离线打开壳（具体行情仍需联网）。
 
+### 6. 打包成 Android App（Capacitor）
+
+本项目已接入 **Capacitor**，可打包为原生 Android 应用，功能与网页一致。
+
+**环境要求**：本机安装 [Android Studio](https://developer.android.com/studio)。工程已配置为使用 Android Studio 自带 JDK 17 构建；若本机默认是 JDK 25，会报 `Unsupported class file major version 69`，此时可：① 用命令行构建时执行 `android\gradlew-jdk17.bat` 代替 `gradlew.bat`；② 或注释 `android/gradle.properties` 中 `org.gradle.java.home` 一行并设置系统 **JAVA_HOME** 为 JDK 17/21。
+
+```bash
+# 构建 Web 并同步到 Android 工程
+npm run cap:sync
+
+# 用 Android Studio 打开并运行（真机或模拟器）
+npm run cap:open
+```
+
+在 Android Studio 中点击 Run（绿色三角）即可安装到模拟器或真机。打正式安装包：菜单 **Build → Build Bundle(s) / APK(s) → Build APK(s)** 或 **Build AAB**（上架 Google Play 用）。
+
+| 脚本 | 说明 |
+|------|------|
+| `npm run cap:sync` | 先执行 `npm run build`，再把 `dist` 同步到 `android` 工程 |
+| `npm run cap:open` | 用 Android Studio 打开 `android` 目录 |
+
+修改 Web 代码后需重新执行 `npm run cap:sync` 再在 Android Studio 中运行，才能看到更新。
+
+**若执行 `cap:sync` 报错 `ENOTEMPTY` 或 `EPERM`**：请先**关闭 Android Studio**（以及任何打开 `android` 文件夹的程序），再重新运行 `npm run cap:sync`。
+
 ## 数据源说明
 
 | 类型     | 数据源        | 说明 |

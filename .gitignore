@@ -20,3 +20,9 @@ Thumbs.db
 
 # Vite
 *.tsbuildinfo
+
+# Android / Capacitor
+android/app/build/
+android/build/
+*.apk
+*.aab

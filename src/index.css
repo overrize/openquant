@@ -51,6 +51,13 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 避免与系统状态栏重叠（iOS/支持 safe-area 的壳） */
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Capacitor 等原生壳：无 safe-area 时预留状态栏高度，避免顶栏与状态栏重叠 */
+body.capacitor-status-bar-padding {
+  padding-top: 28px;
 }
 
 .font-mono {
