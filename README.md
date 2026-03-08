@@ -7,7 +7,7 @@
 - **美股**：通过 Finnhub WebSocket 实时成交价，REST 拉取前收价计算涨跌幅
 - **A股**：通过东方财富网（push2.eastmoney.com）接口轮询实时行情，无需 API Key
 - **加密货币**：通过 Binance WebSocket 实时价格与涨跌幅（无需 API Key）
-- **贵金属·原油**：黄金/白银/原油等（美股 ETF：GLD、SLV、USO 等，需 Finnhub Key）
+- **贵金属·原油**：东方财富国内期货（沪金 元/克、沪银 元/千克、原油 元/桶），无需 API Key
 - 涨跌颜色与价格更新闪烁效果
 - 深色仪表盘风格
 
@@ -40,12 +40,22 @@ npm run build
 npm run preview
 ```
 
+### 5. 安装为 App（PWA）
+
+当前项目已是 **PWA**，部署到 **HTTPS** 后：
+
+- **手机/平板**：在浏览器中打开站点，使用「添加到主屏幕」或「安装应用」，即可像原生 App 一样使用，功能与网页一致。
+- **桌面 Chrome**：地址栏右侧会出现「安装」图标，可安装为独立窗口应用。
+
+无需打包或上架应用商店，安装后即可离线打开壳（具体行情仍需联网）。
+
 ## 数据源说明
 
 | 类型     | 数据源        | 说明 |
 |----------|---------------|------|
 | 美股     | Finnhub       | 免费注册，WebSocket 实时成交 + REST 前收价 |
 | A股      | 东方财富网     | 无需 Key，轮询 push2.eastmoney.com 个股接口（约 8 秒刷新）；K 线优先用 [Ashare](https://github.com/mpquant/Ashare) 同源（腾讯→新浪→东方财富） |
+| 贵金属·原油 | 东方财富网   | 无需 Key，push2 期货/次主连（沪金 元/克、沪银 元/千克、原油 元/桶） |
 | 加密货币 | Binance 公开流 | 无需 Key，直接连接 Binance WebSocket |
 
 ## 默认标的
@@ -53,7 +63,7 @@ npm run preview
 - **美股**：AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, AMD
 - **A股**：贵州茅台、中国平安、招商银行、五粮液、比亚迪、宁德时代（可在 `src/types.ts` 的 `CN_STOCK_SYMBOLS` 中修改，格式为 `{ secid: '1.600519', code: '600519', name: '贵州茅台' }`，沪市 secid 以 1. 开头，深市以 0. 开头）
 - **加密货币**：BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT
-- **贵金属·原油**：GLD(黄金)、SLV(白银)、USO(原油)、IAU、PPLT（见 `COMMODITY_SYMBOLS`）
+- **贵金属·原油**：沪金次主连(113.aus)、沪银次主连(113.ags)、原油次主连(142.scs)，单位 元/克、元/千克、元/桶（见 `COMMODITY_SYMBOLS` / `COMMODITY_UNITS`）
 
 修改 `src/types.ts` 中的 `STOCK_SYMBOLS`、`CN_STOCK_SYMBOLS`、`CRYPTO_SYMBOLS` 与 `COMMODITY_SYMBOLS` 可自定义列表。做成 App 的路线图见 `docs/APP_PLAN.md`。
 

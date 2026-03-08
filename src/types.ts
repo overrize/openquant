@@ -41,18 +41,19 @@ export const STOCK_NAMES: Record<string, string> = {
 }
 export const CRYPTO_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'AVAXUSDT']
 
-/** 贵金属·原油：美股 ETF 代码，用 Finnhub 拉行情 */
-export const COMMODITY_SYMBOLS = ['GLD', 'SLV', 'USO', 'IAU', 'PPLT']
-/** 贵金属/大宗名称（GLD=黄金, SLV=白银, USO=原油 等） */
+/** 贵金属·原油：东方财富期货/次主连 secid，数据源 push2.eastmoney.com，单位见 COMMODITY_UNITS */
+export const COMMODITY_SYMBOLS = ['113.aus', '113.ags', '142.scs']
+/** 贵金属/大宗名称（secid -> 显示名） */
 export const COMMODITY_NAMES: Record<string, string> = {
-  GLD: '黄金(SPDR)',
-  SLV: '白银(iShares)',
-  USO: '原油(USO)',
-  IAU: '黄金(iShares)',
-  PPLT: '铂金',
-  BNO: '布伦特原油',
-  CPER: '铜',
-  UNG: '天然气',
+  '113.aus': '沪金次主连',
+  '113.ags': '沪银次主连',
+  '142.scs': '原油次主连',
+}
+/** 常规单位（元/克、元/千克、元/桶），与国内期货报价一致 */
+export const COMMODITY_UNITS: Record<string, string> = {
+  '113.aus': '元/克',   // 沪金，上海期货
+  '113.ags': '元/千克', // 沪银
+  '142.scs': '元/桶',   // 上海原油，上期能源
 }
 
 /** 默认 A 股（沪市 1.xxx 深市 0.xxx）*/

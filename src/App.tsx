@@ -5,6 +5,7 @@ import { useStockPrices } from './hooks/useStockPrices'
 import { useStockQuotes } from './hooks/useStockQuotes'
 import { STOCK_SYMBOLS as DEFAULT_STOCKS, CRYPTO_SYMBOLS as DEFAULT_CRYPTO, CN_STOCK_SYMBOLS as DEFAULT_CN, COMMODITY_SYMBOLS as DEFAULT_COMMODITY, STOCK_NAMES, COMMODITY_NAMES } from './types'
 import { useCnStockQuotes } from './hooks/useCnStockQuotes'
+import { useCommodityEastMoney } from './hooks/useCommodityEastMoney'
 import { useBot } from './hooks/useBot'
 import { useTenderOffers } from './hooks/useTenderOffers'
 import { Dashboard } from './components/Dashboard'
@@ -39,9 +40,12 @@ function App() {
   const [cnSymbols, setCnSymbols] = useState<CnStockSymbol[]>(() =>
     loadJson<CnStockSymbol[]>(LS_CN, DEFAULT_CN)
   )
-  const [commoditySymbols, setCommoditySymbols] = useState<string[]>(() =>
-    loadJson<string[]>(LS_COMMODITY, DEFAULT_COMMODITY)
-  )
+  const [commoditySymbols, setCommoditySymbols] = useState<string[]>(() => {
+    const raw = loadJson<string[]>(LS_COMMODITY, DEFAULT_COMMODITY)
+    const isSecid = (s: string) => /^\d+\.\w+$/.test(s)
+    if (raw.length > 0 && raw.every(isSecid)) return raw
+    return DEFAULT_COMMODITY
+  })
 
   useEffect(() => {
     localStorage.setItem(LS_STOCKS, JSON.stringify(stockSymbols))
@@ -210,8 +214,7 @@ function App() {
 
   useStockQuotes(apiKey || null, stockSymbols, mergeUpdates)
   useStockPrices(apiKey || null, stockSymbols, mergeUpdates)
-  useStockQuotes(apiKey || null, commoditySymbols, mergeUpdates, { idPrefix: 'commodity', assetType: 'commodity' })
-  useStockPrices(apiKey || null, commoditySymbols, mergeUpdates, { idPrefix: 'commodity', assetType: 'commodity' })
+  useCommodityEastMoney(commoditySymbols, mergeUpdates)
   useCryptoPrices(cryptoSymbols, mergeUpdates)
   useCnStockQuotes(cnSymbols, mergeUpdates)
 

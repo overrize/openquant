@@ -70,7 +70,10 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
       const log = (tag: string, ...args: unknown[]) => console.log('[KlineModal]', tag, ...args)
       log('start', { type, symbol: row.symbol, id: row.id })
       try {
-        if (type === 'stock' || type === 'commodity') {
+        if (type === 'commodity') {
+          setData([])
+          setError('东方财富期货 K 线暂未接入')
+        } else if (type === 'stock') {
           let bars: KlineBar[] = []
           if (apiKey) {
             log('try Finnhub')

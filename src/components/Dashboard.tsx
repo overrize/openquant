@@ -10,6 +10,7 @@ import { useMarketOverview, useMarketOverviewUs } from '../hooks/useMarketOvervi
 import { useCryptoFearGreed, useCryptoRSI, useAltcoinSeasonIndex } from '../hooks/useCryptoFearGreed'
 import { MarketOverviewPanel } from './MarketOverviewPanel'
 import type { LlmFactorConfig } from '../bot/llmFactor'
+import { COMMODITY_UNITS } from '../types'
 
 type TabId = 'us' | 'cn' | 'crypto' | 'commodity' | 'bot' | 'research' | 'tender'
 
@@ -433,9 +434,9 @@ export function Dashboard({
 
         {activeTab === 'commodity' && (
           <div>
-            <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg)]/30">
+            <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg)]/30 space-y-2">
               <p className="text-sm text-[var(--muted)]">
-                黄金、白银、原油等以美股 ETF 行情展示（如 GLD/SLV/USO），需在设置中配置 Finnhub API Key。
+                数据来自 <strong className="text-[var(--text)]">东方财富</strong> 国内期货行情：沪金 <strong className="text-[var(--text)]">元/克</strong>、沪银 <strong className="text-[var(--text)]">元/千克</strong>、原油 <strong className="text-[var(--text)]">元/桶</strong>，无需 API Key。
               </p>
             </div>
             <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
@@ -449,7 +450,7 @@ export function Dashboard({
                     setSearchCommodity('')
                   }
                 }}
-                placeholder="输入代码添加，如 GLD SLV USO"
+                placeholder="添加 secid，如 113.aus 113.ags 142.scs"
                 className="flex-1 input-field text-sm"
               />
               <button
@@ -464,28 +465,43 @@ export function Dashboard({
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
-                    <th className="py-3 px-4 font-medium">名称 / 代码</th>
-                    <th className="py-3 px-4 text-right font-medium">最新价(美元)</th>
-                    <th className="py-3 px-4 text-right font-medium">前收(美元)</th>
-                    <th className="py-3 px-4 text-right font-medium">涨跌额(美元)</th>
+                    <th className="py-3 px-4 font-medium">名称 / secid</th>
+                    <th className="py-3 px-4 text-right font-medium">最新价</th>
                     <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
                     <th className="py-3 px-4 text-center font-medium">K线</th>
                     <th className="py-3 px-4 w-10" />
                   </tr>
                 </thead>
                 <tbody>
-                  {commodityList.map((row) => (
-                    <TickerRowComponent
-                      key={row.id}
-                      row={row}
-                      showName
-                      showPrevShowChange
-                      showSparkline={false}
-                      sparkPoints={priceHistory[row.id]}
-                      onRowClick={setKlineRow}
-                      onDelete={() => onRemoveCommodity(row.symbol)}
-                    />
-                  ))}
+                  {commodityList.map((row) => {
+                    const unit = COMMODITY_UNITS[row.symbol] ?? ''
+                    const changePercent = row.changePercent ?? (row.prevClose ? ((row.price - row.prevClose) / row.prevClose) * 100 : undefined)
+                    const isUp = (changePercent ?? 0) > 0
+                    const isDown = (changePercent ?? 0) < 0
+                    return (
+                      <tr
+                        key={row.id}
+                        role="button"
+                        onClick={() => setKlineRow(row)}
+                        className="border-b border-[var(--border)]/40 cursor-pointer hover:bg-[var(--panel-hover)] transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-semibold text-[var(--text)]">{row.symbol}</span>
+                          {row.name && <span className="ml-2 text-xs text-[var(--muted)]">{row.name}</span>}
+                        </td>
+                        <td className="py-3 px-4 text-right tabular-nums text-[var(--text)]">
+                          {row.price > 0 ? `${row.price.toFixed(2)} ${unit}` : '—'}
+                        </td>
+                        <td className={`py-3 px-4 text-right tabular-nums ${isUp ? 'text-green-500' : isDown ? 'text-red-500' : 'text-[var(--muted)]'}`}>
+                          {changePercent != null ? `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%` : '—'}
+                        </td>
+                        <td className="py-3 px-4 text-center text-[var(--muted)]">—</td>
+                        <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button type="button" onClick={() => onRemoveCommodity(row.symbol)} className="text-[var(--muted)] hover:text-red-400" aria-label="删除">×</button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
