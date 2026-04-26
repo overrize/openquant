@@ -7,25 +7,25 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"SF Mono"', 'Consolas', 'monospace'],
+        sans: ['"PingFang SC"', '"Source Han Sans SC"', '"Noto Sans SC"', '-apple-system', '"Helvetica Neue"', 'sans-serif'],
+        mono: ['"SF Mono"', '"JetBrains Mono"', 'Menlo', 'ui-monospace', 'monospace'],
+        display: ['"Source Han Serif SC"', '"Songti SC"', 'Georgia', 'serif'],
       },
       colors: {
         tick: {
-          up: '#10b981',
-          down: '#ef4444',
-          flat: '#64748b',
+          up: 'var(--oq-up)',
+          down: 'var(--oq-down)',
+          flat: 'var(--oq-flat)',
         },
-        /** A股习惯：红涨绿跌 */
         cn: {
-          up: '#ef4444',
-          down: '#10b981',
-          flat: '#64748b',
+          up: 'var(--oq-up)',
+          down: 'var(--oq-down)',
+          flat: 'var(--oq-flat)',
         },
         surface: {
-          DEFAULT: '#151d2e',
-          hover: '#1a2540',
-          secondary: '#111827',
+          DEFAULT: 'var(--oq-ink-0)',
+          hover: 'var(--oq-ink-05)',
+          secondary: 'var(--oq-ink-10)',
         },
       },
       borderRadius: {
@@ -33,10 +33,10 @@ export default {
         '3xl': '1.5rem',
       },
       boxShadow: {
-        'glow': '0 0 20px 2px rgba(59, 130, 246, 0.1)',
-        'glow-lg': '0 0 40px 4px rgba(59, 130, 246, 0.15)',
-        'card': '0 4px 24px -4px rgba(0, 0, 0, 0.3)',
-        'card-lg': '0 8px 32px -4px rgba(0, 0, 0, 0.4)',
+        'glow': 'var(--oq-shadow-sm)',
+        'glow-lg': 'var(--oq-shadow-md)',
+        'card': 'var(--oq-shadow-md)',
+        'card-lg': 'var(--oq-shadow-lg)',
       },
     },
   },

@@ -145,26 +145,26 @@ export function Dashboard({
   const altcoinSeasonIndex = useAltcoinSeasonIndex(activeTab === 'crypto')
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1440px] mx-auto">
       {/* Tab navigation */}
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
         {TABS.map(({ id, label, desc }) => (
           <button
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shrink-0 ${
+            className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-200 shrink-0 border ${
               activeTab === id
-                ? 'bg-gradient-to-r from-blue-600/20 to-violet-600/20 text-[var(--text)] border border-blue-500/30 shadow-glow'
-                : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--panel)] border border-transparent'
+                ? 'bg-[var(--oq-ink-90)] text-[var(--oq-ink-05)] border-[var(--oq-ink-90)] shadow-glow'
+                : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--panel)] border-transparent'
             }`}
           >
-            <span className={`transition-colors ${activeTab === id ? 'text-blue-400' : 'text-[var(--muted)] group-hover:text-[var(--text)]'}`}>
+            <span className={`transition-colors ${activeTab === id ? 'text-[var(--oq-ink-05)]' : 'text-[var(--muted)] group-hover:text-[var(--text)]'}`}>
               {TAB_ICONS[id]}
             </span>
             <div className="text-left">
               <div>{label}</div>
-              <div className={`text-[10px] leading-tight ${activeTab === id ? 'text-blue-400/70' : 'text-[var(--muted)]/70'}`}>
+              <div className={`text-[10px] leading-tight ${activeTab === id ? 'text-[var(--oq-ink-20)]' : 'text-[var(--muted)]/70'}`}>
                 {desc}
               </div>
             </div>
@@ -173,9 +173,12 @@ export function Dashboard({
       </div>
 
       {/* Tab content */}
-      <div className="glass-card rounded-2xl overflow-hidden shadow-card animate-fadeIn">
+      <div className="glass-card rounded-[var(--oq-r-lg)] overflow-hidden shadow-card animate-fadeIn">
         {activeTab === 'us' && (
           <div>
+            <div className="oq-panel-head flex items-center gap-2 px-4 py-3">
+              Watchlist · US Equities
+            </div>
             <div className="border-b border-[var(--border)]">
               <MarketOverviewPanel
                 indices={usMarketOverview.indices}
@@ -184,7 +187,7 @@ export function Dashboard({
                 loading={usMarketOverview.loading}
               />
             </div>
-            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--oq-ink-05)]">
               <input
                 type="text"
                 value={searchUs}
@@ -209,7 +212,7 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                  <tr className="text-left text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] border-b border-[var(--border)] bg-[var(--panel)]">
                     <th className="py-3 px-4 font-medium">代码 / 公司</th>
                     <th className="py-3 px-4 text-right font-medium">最新价(USD)</th>
                     <th className="py-3 px-4 text-right font-medium">前收(USD)</th>
@@ -238,6 +241,9 @@ export function Dashboard({
 
         {activeTab === 'cn' && (
           <div>
+            <div className="oq-panel-head flex items-center gap-2 px-4 py-3">
+              Watchlist · CN A-Shares
+            </div>
             <div className="border-b border-[var(--border)]">
               <MarketOverviewPanel
                 indices={marketOverview.indices}
@@ -246,7 +252,7 @@ export function Dashboard({
                 loading={marketOverview.loading}
               />
             </div>
-            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--oq-ink-05)]">
               <input
                 type="text"
                 value={searchCn}
@@ -271,7 +277,7 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                  <tr className="text-left text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] border-b border-[var(--border)] bg-[var(--panel)]">
                     <th className="py-3 px-4 font-medium">代码 / 名称</th>
                     <th className="py-3 px-4 text-right font-medium">最新价(CNY)</th>
                     <th className="py-3 px-4 text-right font-medium">前收(CNY)</th>
@@ -302,7 +308,10 @@ export function Dashboard({
 
         {activeTab === 'crypto' && (
           <div>
-            <div className="px-5 py-4 border-b border-[var(--border)] space-y-3 bg-[var(--bg)]/30">
+            <div className="oq-panel-head flex items-center gap-2 px-4 py-3">
+              Watchlist · Crypto
+            </div>
+            <div className="px-5 py-4 border-b border-[var(--border)] space-y-3 bg-[var(--oq-ink-05)]">
               {cryptoList.some((r) => r.symbol === 'BTCUSDT') && (
                 <div className="flex flex-wrap items-center gap-4">
                   <span className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider">市场参考</span>
@@ -380,7 +389,7 @@ export function Dashboard({
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--oq-ink-05)]">
               <input
                 type="text"
                 value={searchCrypto}
@@ -405,7 +414,7 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                  <tr className="text-left text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] border-b border-[var(--border)] bg-[var(--panel)]">
                     <th className="py-3 px-4 font-medium">交易对</th>
                     <th className="py-3 px-4 text-right font-medium">最新价(USDT)</th>
                     <th className="py-3 px-4 text-right font-medium">24h开盘(USDT)</th>
@@ -434,12 +443,15 @@ export function Dashboard({
 
         {activeTab === 'commodity' && (
           <div>
-            <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--bg)]/30 space-y-2">
+            <div className="oq-panel-head flex items-center gap-2 px-4 py-3">
+              Watchlist · Commodities
+            </div>
+            <div className="px-5 py-4 border-b border-[var(--border)] bg-[var(--oq-ink-05)] space-y-2">
               <p className="text-sm text-[var(--muted)]">
                 数据来自 <strong className="text-[var(--text)]">东方财富</strong> 国内期货行情：沪金 <strong className="text-[var(--text)]">元/克</strong>、沪银 <strong className="text-[var(--text)]">元/千克</strong>、原油 <strong className="text-[var(--text)]">元/桶</strong>，无需 API Key。
               </p>
             </div>
-            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)]">
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--oq-ink-05)]">
               <input
                 type="text"
                 value={searchCommodity}
@@ -464,7 +476,7 @@ export function Dashboard({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs text-[var(--muted)] border-b border-[var(--border)] bg-[var(--bg)]/30">
+                  <tr className="text-left text-[10px] uppercase tracking-[0.12em] text-[var(--muted)] border-b border-[var(--border)] bg-[var(--panel)]">
                     <th className="py-3 px-4 font-medium">名称 / secid</th>
                     <th className="py-3 px-4 text-right font-medium">最新价</th>
                     <th className="py-3 px-4 text-right font-medium">涨跌幅</th>
@@ -483,7 +495,7 @@ export function Dashboard({
                         key={row.id}
                         role="button"
                         onClick={() => setKlineRow(row)}
-                        className="border-b border-[var(--border)]/40 cursor-pointer hover:bg-[var(--panel-hover)] transition-colors"
+                        className="border-b border-[var(--border)]/70 cursor-pointer hover:bg-[var(--panel-hover)] transition-colors"
                       >
                         <td className="py-3 px-4">
                           <span className="font-mono font-semibold text-[var(--text)]">{row.symbol}</span>
@@ -492,12 +504,12 @@ export function Dashboard({
                         <td className="py-3 px-4 text-right tabular-nums text-[var(--text)]">
                           {row.price > 0 ? `${row.price.toFixed(2)} ${unit}` : '—'}
                         </td>
-                        <td className={`py-3 px-4 text-right tabular-nums ${isUp ? 'text-green-500' : isDown ? 'text-red-500' : 'text-[var(--muted)]'}`}>
+                        <td className={`py-3 px-4 text-right tabular-nums ${isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-[var(--muted)]'}`}>
                           {changePercent != null ? `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%` : '—'}
                         </td>
                         <td className="py-3 px-4 text-center text-[var(--muted)]">—</td>
                         <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                          <button type="button" onClick={() => onRemoveCommodity(row.symbol)} className="text-[var(--muted)] hover:text-red-400" aria-label="删除">×</button>
+                          <button type="button" onClick={() => onRemoveCommodity(row.symbol)} className="text-[var(--muted)] hover:text-tick-down" aria-label="删除">×</button>
                         </td>
                       </tr>
                     )

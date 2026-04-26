@@ -54,7 +54,7 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
 
   const symbolCell = (
     <div className="flex items-center gap-2">
-      <span className="font-mono font-semibold text-[var(--text)]">{row.symbol}</span>
+      <span className="font-mono font-semibold text-[var(--text)] tracking-tight">{row.symbol}</span>
       {showName && row.name && (
         <span className="text-xs text-[var(--muted)]">{row.name}</span>
       )}
@@ -64,7 +64,7 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
   const trProps = {
     role: onRowClick ? 'button' as const : undefined,
     onClick: onRowClick ? () => onRowClick(row) : undefined,
-    className: `border-b border-[var(--border)]/40 ${flashClass} transition-colors duration-150 ${onRowClick ? 'cursor-pointer hover:bg-[var(--panel-hover)]' : ''}`,
+    className: `border-b border-[var(--border)]/70 ${flashClass} transition-colors duration-150 ${onRowClick ? 'cursor-pointer hover:bg-[var(--panel-hover)]' : ''}`,
   }
 
   const deleteCell = onDelete ? (
@@ -72,7 +72,7 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
       <button
         type="button"
         onClick={onDelete}
-        className="text-[var(--muted)] hover:text-red-400 transition-colors p-1 rounded-md hover:bg-red-500/10"
+        className="text-[var(--muted)] hover:text-tick-down transition-colors p-1 rounded-md hover:bg-[var(--oq-down-bg)]"
         title="从自选删除"
         aria-label="删除"
       >
@@ -89,8 +89,8 @@ export function TickerRow({ row, showName, showPrevShowChange, showSparkline = t
     ? (isUp ? 'text-cn-up' : isDown ? 'text-cn-down' : 'text-cn-flat')
     : (isUp ? 'text-tick-up' : isDown ? 'text-tick-down' : 'text-tick-flat')
   const badgeClass = isCn
-    ? (isUp ? 'bg-red-500/15' : isDown ? 'bg-emerald-500/15' : '')
-    : (isUp ? 'bg-emerald-500/15' : isDown ? 'bg-red-500/15' : '')
+    ? (isUp ? 'bg-[var(--oq-up-bg)]' : isDown ? 'bg-[var(--oq-down-bg)]' : 'bg-[var(--oq-ink-10)]')
+    : (isUp ? 'bg-[var(--oq-up-bg)]' : isDown ? 'bg-[var(--oq-down-bg)]' : 'bg-[var(--oq-ink-10)]')
 
   if (showPrevShowChange) {
     return (

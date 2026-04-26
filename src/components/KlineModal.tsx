@@ -186,27 +186,27 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
       : CRYPTO_INTERVALS_LONG.find((x) => x.value === cryptoInterval)?.label ?? cryptoInterval)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,24,18,0.3)] backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="glass-card rounded-2xl shadow-card-lg w-full max-w-4xl max-h-[90vh] flex flex-col animate-slideUp"
+        className="glass-card rounded-[var(--oq-r-lg)] shadow-card-lg w-full max-w-5xl max-h-[90vh] flex flex-col animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b border-[var(--border)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b border-[var(--border)] bg-[var(--oq-ink-05)]">
           <div className="flex items-center gap-3 flex-wrap">
-            <h3 className="text-lg font-semibold text-[var(--text)]">
+            <h3 className="font-display text-xl font-semibold text-[var(--text)]">
               {isCrypto ? `${intervalLabel ?? 'K 线'} · ${title}` : `日 K 线 · ${title}`}
             </h3>
             {isCrypto && (
               <div className="flex items-center gap-1 text-sm">
                 <span className="text-[var(--muted)]">周期：</span>
-                <div className="flex rounded-lg border border-[var(--border)] p-0.5">
+                <div className="flex rounded-md border border-[var(--border)] p-0.5 bg-[var(--panel)]">
                   <button
                     type="button"
                     onClick={() => {
                       setRange('realtime')
                       if (!CRYPTO_INTERVALS_REALTIME.some((x) => x.value === cryptoInterval)) setCryptoInterval('1m')
                     }}
-                    className={`px-2.5 py-1 rounded-md text-sm ${range === 'realtime' ? 'bg-[var(--bg)] text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'}`}
+                    className={`px-2.5 py-1 rounded text-sm ${range === 'realtime' ? 'bg-[var(--oq-ink-90)] text-[var(--oq-ink-05)]' : 'text-[var(--muted)] hover:text-[var(--text)]'}`}
                   >
                     实时
                   </button>
@@ -216,7 +216,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
                       setRange('long')
                       if (!CRYPTO_INTERVALS_LONG.some((x) => x.value === cryptoInterval)) setCryptoInterval('1d')
                     }}
-                    className={`px-2.5 py-1 rounded-md text-sm ${range === 'long' ? 'bg-[var(--bg)] text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'}`}
+                    className={`px-2.5 py-1 rounded text-sm ${range === 'long' ? 'bg-[var(--oq-ink-90)] text-[var(--oq-ink-05)]' : 'text-[var(--muted)] hover:text-[var(--text)]'}`}
                   >
                     长期
                   </button>
@@ -227,7 +227,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
                       key={opt.value}
                       type="button"
                       onClick={() => setCryptoInterval(opt.value)}
-                      className={`px-2 py-1 rounded text-xs ${cryptoInterval === opt.value ? 'bg-blue-600/30 text-blue-300' : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-white/5'}`}
+                      className={`px-2 py-1 rounded text-xs ${cryptoInterval === opt.value ? 'bg-[var(--oq-ink-10)] text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--oq-ink-10)]'}`}
                     >
                       {opt.label}
                     </button>
@@ -239,7 +239,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--muted)] hover:text-[var(--text)] p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            className="text-[var(--muted)] hover:text-[var(--text)] p-1.5 rounded-lg hover:bg-[var(--oq-ink-10)] transition-colors"
             aria-label="关闭"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -247,7 +247,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
             </svg>
           </button>
         </div>
-        <div className="p-5 overflow-auto flex-1 min-h-0 min-w-0 flex flex-col">
+        <div className="p-5 overflow-auto flex-1 min-h-0 min-w-0 flex flex-col bg-[var(--panel)]">
           {loading && (
             <div className="text-[var(--muted)] py-8 text-center flex items-center justify-center gap-2">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -258,7 +258,7 @@ export function KlineModal({ row, apiKey, alphaVantageKey, onClose }: KlineModal
             </div>
           )}
           {error && (
-            <div className="text-red-400 py-4 text-center">
+            <div className="text-tick-down py-4 text-center">
               <div>{error}</div>
               {error.includes('403') && (
                 <div className="text-xs text-[var(--muted)] mt-2 max-w-md mx-auto">

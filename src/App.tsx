@@ -292,23 +292,31 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-mesh">
-      <header className="sticky top-0 z-40 border-b border-[var(--border)] px-6 py-3 flex items-center justify-between glass-card">
+      <header className="oq-topbar sticky top-0 z-40 px-5 py-3 grid grid-cols-[1fr_auto] lg:grid-cols-[240px_minmax(240px,1fr)_280px] items-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center shadow-glow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="oq-logo w-7 h-7 rounded-md flex items-center justify-center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
               <polyline points="16 7 22 7 22 13" />
             </svg>
           </div>
-          <h1 className="text-lg font-bold tracking-tight gradient-text">
+          <h1 className="text-lg font-semibold tracking-tight gradient-text">
             OpenQuant
           </h1>
-          <span className="text-xs text-[var(--muted)] hidden sm:inline ml-1">量化分析平台</span>
+          <span className="font-mono text-[10px] text-[var(--muted)] hidden sm:inline rounded border border-[var(--border)] px-1.5 py-0.5">v2</span>
+        </div>
+        <div className="hidden lg:flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm text-[var(--muted)] shadow-glow">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span className="flex-1">搜索股票、交易对或策略模块</span>
+          <span className="font-mono text-[11px] rounded border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-0.5">⌘K</span>
         </div>
         <button
           type="button"
           onClick={() => setShowSettings(true)}
-          className="btn-ghost flex items-center gap-2 text-sm"
+          className="btn-ghost justify-self-end flex items-center gap-2 text-sm"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
@@ -318,7 +326,7 @@ function App() {
         </button>
       </header>
 
-      <main className="flex-1 p-4 sm:p-6">
+      <main className="flex-1 p-3 sm:p-4 lg:p-5">
         <Dashboard
           stockList={stockList}
           cryptoList={cryptoList}

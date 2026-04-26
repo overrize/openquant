@@ -18,7 +18,7 @@ export function Sparkline({
     const isUp = true
     return (
       <svg className={className} width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-        <line x1={0} y1={height / 2} x2={width} y2={height / 2} stroke={isUp ? '#22c55e' : '#ef4444'} strokeWidth={1} />
+        <line x1={0} y1={height / 2} x2={width} y2={height / 2} stroke={isUp ? '#0d7a6b' : '#b83565'} strokeWidth={1} />
       </svg>
     )
   }
@@ -33,7 +33,7 @@ export function Sparkline({
   const toY = (v: number) => padding + h - ((v - min) / range) * h
   const d = pts.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(v)}`).join(' ')
   const isUp = pts[pts.length - 1]! >= pts[0]!
-  const stroke = isUp ? '#22c55e' : '#ef4444'
+  const stroke = isUp ? '#0d7a6b' : '#b83565'
   return (
     <svg className={className} width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
       <path d={d} fill="none" stroke={stroke} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" />

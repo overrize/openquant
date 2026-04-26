@@ -3,21 +3,67 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0a0e17;
-  --bg-secondary: #111827;
-  --panel: #151d2e;
-  --panel-hover: #1a2540;
-  --border: #1e2d45;
-  --border-light: #253552;
-  --text: #e8edf5;
-  --text-secondary: #c0c8d8;
-  --muted: #6b7a94;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-glow: rgba(59, 130, 246, 0.15);
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
+  /* OpenQuant design system: warm paper, graphite, teal gain, magenta loss. */
+  --oq-ink-0: #ffffff;
+  --oq-ink-05: #fafaf7;
+  --oq-ink-10: #f4f3ee;
+  --oq-ink-15: #ebe9e1;
+  --oq-ink-20: #ddd9cc;
+  --oq-ink-30: #c4bead;
+  --oq-ink-40: #9a9481;
+  --oq-ink-60: #605a4a;
+  --oq-ink-80: #2b2820;
+  --oq-ink-90: #1a1812;
+  --oq-ink-95: #0f0e0a;
+
+  --oq-brand: #2b2820;
+  --oq-brand-accent: #3a5f5a;
+  --oq-up: #0d7a6b;
+  --oq-up-fg: #0a5b50;
+  --oq-up-bg: #d9efe9;
+  --oq-up-bg-2: #a8dcd0;
+  --oq-up-bg-3: #5cc0ae;
+  --oq-down: #b83565;
+  --oq-down-fg: #8f1f4a;
+  --oq-down-bg: #f5dee7;
+  --oq-down-bg-2: #e9b2c5;
+  --oq-down-bg-3: #d37aa0;
+  --oq-flat: #9a9481;
+  --oq-warn: #b8742b;
+  --oq-warn-bg: #f4e6cf;
+  --oq-info: #3a5f7a;
+  --oq-info-bg: #dde8f0;
+
+  --oq-r-xs: 3px;
+  --oq-r-sm: 6px;
+  --oq-r-md: 10px;
+  --oq-r-lg: 14px;
+  --oq-r-xl: 20px;
+  --oq-shadow-sm: 0 1px 0 rgba(43,40,32,0.04), 0 1px 2px rgba(43,40,32,0.06);
+  --oq-shadow-md: 0 1px 0 rgba(43,40,32,0.04), 0 4px 12px -2px rgba(43,40,32,0.08);
+  --oq-shadow-lg: 0 1px 0 rgba(43,40,32,0.04), 0 12px 32px -8px rgba(43,40,32,0.14);
+  --oq-shadow-focus: 0 0 0 3px rgba(13,122,107,0.18);
+  --oq-font-sans: "PingFang SC", "Source Han Sans SC", "Noto Sans SC", -apple-system, "Helvetica Neue", sans-serif;
+  --oq-font-mono: "SF Mono", "JetBrains Mono", "Menlo", ui-monospace, monospace;
+  --oq-font-display: "Source Han Serif SC", "Songti SC", Georgia, serif;
+  --oq-ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Legacy variable bridge for existing React components. */
+  --bg: var(--oq-ink-05);
+  --bg-secondary: var(--oq-ink-10);
+  --panel: var(--oq-ink-0);
+  --panel-hover: var(--oq-ink-05);
+  --border: var(--oq-ink-20);
+  --border-light: var(--oq-ink-30);
+  --text: var(--oq-ink-90);
+  --text-secondary: var(--oq-ink-80);
+  --muted: var(--oq-ink-60);
+  --accent: var(--oq-up);
+  --accent-hover: var(--oq-up-fg);
+  --accent-glow: rgba(13, 122, 107, 0.18);
+  --success: var(--oq-up);
+  --danger: var(--oq-down);
+  --warning: var(--oq-warn);
 }
 
 * {
@@ -47,10 +93,11 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--oq-font-sans);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" 1, "cv11" 1;
   /* 避免与系统状态栏重叠（iOS/支持 safe-area 的壳） */
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -61,15 +108,25 @@ body.capacitor-status-bar-padding {
 }
 
 .font-mono {
-  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-family: var(--oq-font-mono);
+}
+
+.font-display {
+  font-family: var(--oq-font-display);
+}
+
+.oq-mono,
+.tabular-nums {
+  font-family: var(--oq-font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 @keyframes tick-up {
-  0% { background-color: rgba(16, 185, 129, 0.25); }
+  0% { background-color: var(--oq-up-bg-2); }
   100% { background-color: transparent; }
 }
 @keyframes tick-down {
-  0% { background-color: rgba(239, 68, 68, 0.25); }
+  0% { background-color: var(--oq-down-bg-2); }
   100% { background-color: transparent; }
 }
 .tick-flash-up {
@@ -79,13 +136,12 @@ body.capacitor-status-bar-padding {
   animation: tick-down 0.6s ease-out;
 }
 
-/* A股：红涨绿跌（与 tick 相反） */
 @keyframes cn-tick-up {
-  0% { background-color: rgba(239, 68, 68, 0.25); }
+  0% { background-color: var(--oq-up-bg-2); }
   100% { background-color: transparent; }
 }
 @keyframes cn-tick-down {
-  0% { background-color: rgba(16, 185, 129, 0.25); }
+  0% { background-color: var(--oq-down-bg-2); }
   100% { background-color: transparent; }
 }
 .cn-flash-up {
@@ -120,22 +176,23 @@ body.capacitor-status-bar-padding {
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(21, 29, 46, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%);
+  background: var(--oq-ink-0);
   border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--oq-shadow-sm);
 }
 
 .glass-card-hover:hover {
   border-color: var(--border-light);
-  background: linear-gradient(135deg, rgba(26, 37, 64, 0.9) 0%, rgba(21, 29, 46, 0.8) 100%);
+  background: var(--oq-ink-05);
+  box-shadow: var(--oq-shadow-md);
 }
 
 .input-field {
-  @apply px-3 py-2 rounded-lg border transition-all duration-200;
+  @apply px-3 py-2 border transition-all duration-200;
   background: var(--bg);
   border-color: var(--border);
   color: var(--text);
+  border-radius: var(--oq-r-md);
 }
 .input-field::placeholder {
   color: var(--muted);
@@ -143,17 +200,20 @@ body.capacitor-status-bar-padding {
 .input-field:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--oq-ink-0);
+  box-shadow: var(--oq-shadow-focus);
 }
 
 .btn-primary {
-  @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  @apply px-4 py-2 font-medium text-sm transition-all duration-200;
+  background: var(--oq-ink-90);
+  color: var(--oq-ink-05);
+  border-radius: var(--oq-r-md);
+  border: 1px solid var(--oq-ink-90);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background: var(--oq-ink-80);
+  box-shadow: var(--oq-shadow-md);
   transform: translateY(-1px);
 }
 .btn-primary:active {
@@ -161,26 +221,55 @@ body.capacitor-status-bar-padding {
 }
 
 .btn-ghost {
-  @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
+  @apply px-4 py-2 font-medium text-sm transition-all duration-200;
   color: var(--muted);
   border: 1px solid var(--border);
+  border-radius: var(--oq-r-md);
+  background: transparent;
 }
 .btn-ghost:hover {
   color: var(--text);
   border-color: var(--border-light);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--oq-ink-10);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--oq-ink-90);
+  font-family: var(--oq-font-display);
 }
 
 .bg-mesh {
   background-image:
-    radial-gradient(at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-    radial-gradient(at 50% 0%, rgba(16, 185, 129, 0.04) 0%, transparent 40%);
+    radial-gradient(at 18% 12%, rgba(13, 122, 107, 0.08) 0%, transparent 34%),
+    radial-gradient(at 86% 76%, rgba(184, 53, 101, 0.06) 0%, transparent 38%),
+    linear-gradient(180deg, var(--oq-ink-05) 0%, #f7f5ee 100%);
+}
+
+.oq-topbar {
+  background: color-mix(in srgb, var(--oq-ink-05) 94%, white);
+  border-bottom: 1px solid var(--oq-ink-20);
+}
+
+.oq-logo {
+  background: linear-gradient(135deg, var(--oq-ink-90), var(--oq-brand-accent));
+  color: var(--oq-ink-05);
+  box-shadow: var(--oq-shadow-sm);
+}
+
+.oq-panel-head {
+  border-bottom: 1px solid var(--oq-ink-15);
+  color: var(--oq-ink-60);
+  font-family: var(--oq-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.oq-panel-head::before {
+  content: "";
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--oq-brand-accent);
 }

@@ -17,10 +17,10 @@ function formatPct(n: number): string {
 }
 
 const BEHAVIOR_CONFIG = [
-  { key: 'herd' as const, label: '羊群效应', sub: '追涨/跟风', gradient: 'from-yellow-500 to-amber-500', text: 'text-yellow-400', bg: 'bg-yellow-500' },
-  { key: 'anchor' as const, label: '锚定效应', sub: '溢价参考', gradient: 'from-orange-500 to-red-400', text: 'text-orange-400', bg: 'bg-orange-500' },
-  { key: 'disposition' as const, label: '处置效应', sub: '惜售抗跌', gradient: 'from-emerald-500 to-green-400', text: 'text-green-400', bg: 'bg-green-500' },
-  { key: 'attention' as const, label: '注意力效应', sub: '吸金度', gradient: 'from-blue-500 to-cyan-400', text: 'text-blue-400', bg: 'bg-blue-500' },
+  { key: 'herd' as const, label: '羊群效应', sub: '追涨/跟风', text: 'text-[var(--oq-warn)]', bg: 'bg-[var(--oq-warn)]' },
+  { key: 'anchor' as const, label: '锚定效应', sub: '溢价参考', text: 'text-[var(--oq-info)]', bg: 'bg-[var(--oq-info)]' },
+  { key: 'disposition' as const, label: '处置效应', sub: '惜售抗跌', text: 'text-tick-up', bg: 'bg-[var(--oq-up)]' },
+  { key: 'attention' as const, label: '注意力效应', sub: '吸金度', text: 'text-[var(--oq-brand-accent)]', bg: 'bg-[var(--oq-brand-accent)]' },
 ]
 
 export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: MarketOverviewPanelProps) {
@@ -42,7 +42,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
     <div className="p-5 space-y-5">
       {/* Indices */}
       <div>
-        <h4 className="text-xs font-medium text-[var(--muted)] mb-3 uppercase tracking-wider flex items-center gap-2">
+        <h4 className="text-[10px] font-mono font-semibold text-[var(--muted)] mb-3 uppercase tracking-[0.16em] flex items-center gap-2">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
           </svg>
@@ -59,7 +59,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="text-xs text-[var(--muted)] mb-1">{idx.name}</div>
-                    <div className="text-2xl font-bold font-mono text-[var(--text)] tracking-tight">
+                    <div className="text-2xl font-semibold font-mono text-[var(--text)] tracking-tight">
                       {idx.price.toFixed(2)}
                     </div>
                   </div>
@@ -80,7 +80,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
 
       {/* Sentiment */}
       <div>
-        <h4 className="text-xs font-medium text-[var(--muted)] mb-3 uppercase tracking-wider flex items-center gap-2">
+        <h4 className="text-[10px] font-mono font-semibold text-[var(--muted)] mb-3 uppercase tracking-[0.16em] flex items-center gap-2">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
           </svg>
@@ -98,7 +98,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
               </div>
               <div className="h-2.5 rounded-full overflow-hidden bg-[var(--bg)] flex">
                 <div
-                  className="bg-gradient-to-r from-red-500 to-red-400 transition-all duration-500 rounded-l-full"
+                  className="bg-[var(--oq-up)] transition-all duration-500 rounded-l-full"
                   style={{ width: `${(sentiment.up / sentiment.total) * 100}%` }}
                 />
                 <div
@@ -106,7 +106,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
                   style={{ width: `${(sentiment.flat / sentiment.total) * 100}%` }}
                 />
                 <div
-                  className="bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-500 rounded-r-full"
+                  className="bg-[var(--oq-down)] transition-all duration-500 rounded-r-full"
                   style={{ width: `${(sentiment.down / sentiment.total) * 100}%` }}
                 />
               </div>
@@ -119,7 +119,7 @@ export function MarketOverviewPanel({ indices, sentiment, behavior, loading }: M
 
       {/* Behavior */}
       <div>
-        <h4 className="text-xs font-medium text-[var(--muted)] mb-3 uppercase tracking-wider flex items-center gap-2">
+        <h4 className="text-[10px] font-mono font-semibold text-[var(--muted)] mb-3 uppercase tracking-[0.16em] flex items-center gap-2">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
           </svg>

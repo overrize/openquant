@@ -82,15 +82,15 @@ export function KlineChart({ data, height = 360 }: KlineChartProps) {
       if (w <= 0) return
       chart = createChart(el, {
         layout: {
-          background: { type: ColorType.Solid, color: '#1a2332' },
-          textColor: '#8b949e',
+          background: { type: ColorType.Solid, color: '#ffffff' },
+          textColor: '#605a4a',
         },
-        grid: { vertLines: { color: '#2d3a4f' }, horzLines: { color: '#2d3a4f' } },
+        grid: { vertLines: { color: '#ebe9e1' }, horzLines: { color: '#ebe9e1' } },
         width: Math.max(w, 400),
         height,
-        rightPriceScale: { borderColor: '#2d3a4f', scaleMargins: { top: 0.1, bottom: 0.2 } },
+        rightPriceScale: { borderColor: '#ddd9cc', scaleMargins: { top: 0.1, bottom: 0.2 } },
         timeScale: {
-          borderColor: '#2d3a4f',
+          borderColor: '#ddd9cc',
           timeVisible: true,
           secondsVisible: isIntraday,
           barSpacing: 12,
@@ -115,10 +115,12 @@ export function KlineChart({ data, height = 360 }: KlineChartProps) {
       chartRef.current = chart
 
       const candleSeries = chart.addCandlestickSeries({
-        upColor: '#22c55e',
-        downColor: '#ef4444',
-        borderUpColor: '#22c55e',
-        borderDownColor: '#ef4444',
+        upColor: '#0d7a6b',
+        downColor: '#b83565',
+        borderUpColor: '#0d7a6b',
+        borderDownColor: '#b83565',
+        wickUpColor: '#0d7a6b',
+        wickDownColor: '#b83565',
       })
       seriesRef.current = candleSeries
 
