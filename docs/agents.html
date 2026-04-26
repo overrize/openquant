@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>OpenQuant · Agents & Strategies</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  .shell { display: grid; grid-template-rows: 52px 1fr; height: 100vh;}
+
+  /* Top bar */
+  .topbar { display:flex; align-items:center; gap: 14px; padding: 0 18px; border-bottom: 1px solid var(--oq-ink-20); background: var(--oq-ink-05);}
+  .logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, var(--oq-ink-90), var(--oq-brand-accent)); color: white; display:grid; place-items:center; font-family: var(--oq-font-mono); font-weight: 700; font-size: 11px;}
+  .brand { font-family: var(--oq-font-display); font-weight: 600; font-size: 14px; color: var(--oq-ink-90);}
+  .brand small { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-40); margin-left: 4px; padding: 1px 4px; border: 1px solid var(--oq-ink-20); border-radius: 3px;}
+  .crumb { font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-40); letter-spacing: 0.1em; margin-left: 8px;}
+  .crumb b { color: var(--oq-ink-80); font-weight: 500;}
+  .tabs { display: flex; gap: 2px; margin-left: auto;}
+  .tabs button { padding: 7px 16px; border: none; background: transparent; font-size: 13px; color: var(--oq-ink-60); border-radius: 6px; cursor: pointer; font-family: var(--oq-font-sans); position: relative;}
+  .tabs button.on { color: var(--oq-ink-90); font-weight: 500; background: var(--oq-ink-10);}
+  .tabs button .badge { font-family: var(--oq-font-mono); font-size: 10px; padding: 1px 5px; background: var(--oq-ink-15); border-radius: 3px; margin-left: 5px; color: var(--oq-ink-80);}
+  .top-right { display:flex; gap: 8px; align-items:center;}
+  .btn-primary { padding: 7px 14px; border: none; border-radius: 7px; background: var(--oq-ink-90); color: white; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;}
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--oq-brand-accent); color: white; display:grid; place-items:center; font-size: 11px; font-weight: 600;}
+
+  /* Body */
+  main { display: grid; grid-template-columns: 240px 1fr 360px; gap: 12px; padding: 12px; overflow: hidden;}
+
+  /* Sidebar */
+  .sidebar { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-lg); display: flex; flex-direction: column; overflow: hidden;}
+  .sb-head { padding: 12px 14px 8px; display: flex; justify-content: space-between; align-items: center;}
+  .sb-head h3 { font-family: var(--oq-font-display); margin: 0; font-size: 14px; font-weight: 600; color: var(--oq-ink-90);}
+  .sb-head .add { width: 22px; height: 22px; border-radius: 5px; background: var(--oq-ink-10); color: var(--oq-ink-60); border: none; cursor: pointer; display:grid; place-items: center;}
+  .sb-section { padding: 4px 0 10px;}
+  .sb-section .sl { padding: 4px 14px; font-family: var(--oq-font-mono); font-size: 9.5px; letter-spacing: 0.14em; color: var(--oq-ink-40); text-transform: uppercase; font-weight: 600;}
+  .sb-item { display:flex; align-items: center; gap: 10px; padding: 7px 14px; font-size: 13px; color: var(--oq-ink-80); cursor: pointer; border-left: 2px solid transparent;}
+  .sb-item:hover { background: var(--oq-ink-05);}
+  .sb-item.on { background: var(--oq-ink-10); color: var(--oq-ink-90); border-left-color: var(--oq-brand-accent); font-weight: 500;}
+  .sb-item .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;}
+  .sb-item .dot.live { background: var(--oq-up);}
+  .sb-item .dot.paper { background: var(--oq-warn);}
+  .sb-item .dot.paused { background: var(--oq-ink-30);}
+  .sb-item .dot.draft { background: transparent; border: 1.5px dashed var(--oq-ink-30);}
+  .sb-item .pnl { margin-left: auto; font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 600;}
+  .sb-item .pnl.up { color: var(--oq-up-fg);}
+  .sb-item .pnl.down { color: var(--oq-down-fg);}
+
+  /* Main panel */
+  .center { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-lg); overflow: hidden; display:flex; flex-direction:column;}
+  .strategy-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--oq-ink-15);}
+  .strategy-header .mt { font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--oq-ink-60); text-transform: uppercase; margin-bottom: 6px; display:flex; gap: 12px;}
+  .strategy-header .status-pill { padding: 2px 8px; background: var(--oq-up-bg); color: var(--oq-up-fg); border-radius: 4px; font-weight: 700; letter-spacing: 0.06em; font-family: var(--oq-font-mono);}
+  .strategy-header h1 { font-family: var(--oq-font-display); margin: 0; font-size: 26px; font-weight: 600; color: var(--oq-ink-90); letter-spacing: -0.015em;}
+  .strategy-header .sub { font-size: 13px; color: var(--oq-ink-60); margin-top: 6px; line-height: 1.5;}
+  .strategy-header .actions { display:flex; gap: 8px; margin-top: 14px;}
+  .strategy-header .actions button { padding: 6px 12px; border: 1px solid var(--oq-ink-20); border-radius: 6px; background: var(--oq-ink-0); font-size: 12px; color: var(--oq-ink-80); cursor: pointer; display:flex; gap: 6px; align-items: center;}
+  .strategy-header .actions button.primary { background: var(--oq-ink-90); color: white; border-color: var(--oq-ink-90);}
+  .strategy-header .actions button.danger { color: var(--oq-down-fg);}
+
+  /* Metric strip */
+  .metrics { display:grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--oq-ink-15); }
+  .metric { padding: 14px 18px; border-right: 1px solid var(--oq-ink-15);}
+  .metric:last-child { border-right: none;}
+  .metric .l { font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--oq-ink-60); text-transform: uppercase; margin-bottom: 4px;}
+  .metric .v { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600; color: var(--oq-ink-90); letter-spacing: -0.01em;}
+  .metric .v.up { color: var(--oq-up-fg);}
+  .metric .v.down { color: var(--oq-down-fg);}
+  .metric .d { font-size: 10px; color: var(--oq-ink-60); margin-top: 2px; font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums;}
+
+  /* Content area */
+  .content-body { flex: 1; overflow: auto; padding: 20px 24px;}
+  .sub-tabs { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 1px solid var(--oq-ink-15);}
+  .sub-tabs button { padding: 8px 12px; border: none; background: transparent; font-size: 13px; color: var(--oq-ink-60); cursor: pointer; font-family: var(--oq-font-sans); border-bottom: 2px solid transparent; margin-bottom: -1px;}
+  .sub-tabs button.on { color: var(--oq-ink-90); font-weight: 500; border-bottom-color: var(--oq-ink-90);}
+
+  /* Equity curve */
+  .curve-block { background: var(--oq-ink-05); border: 1px solid var(--oq-ink-15); border-radius: var(--oq-r-md); padding: 16px; margin-bottom: 20px;}
+  .curve-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;}
+  .curve-head h4 { font-family: var(--oq-font-display); font-size: 14px; font-weight: 600; color: var(--oq-ink-90); margin: 0;}
+  .tf-seg { display: flex; gap: 2px;}
+  .tf-seg button { padding: 3px 8px; border: none; background: transparent; font-size: 11px; color: var(--oq-ink-60); border-radius: 4px; cursor: pointer; font-family: var(--oq-font-mono);}
+  .tf-seg button.on { background: var(--oq-ink-10); color: var(--oq-ink-90);}
+
+  /* Trades table */
+  .trades { border: 1px solid var(--oq-ink-15); border-radius: var(--oq-r-md); overflow: hidden;}
+  .trades h4 { font-family: var(--oq-font-display); font-size: 14px; font-weight: 600; color: var(--oq-ink-90); margin: 0; padding: 12px 14px; border-bottom: 1px solid var(--oq-ink-15); background: var(--oq-ink-05);}
+  .trade-row { display: grid; grid-template-columns: 100px 1fr 90px 70px 90px 80px 70px; padding: 9px 14px; border-bottom: 1px solid var(--oq-ink-15); font-size: 12px; align-items: center;}
+  .trade-row:last-child { border-bottom: none;}
+  .trade-row.head { font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--oq-ink-60); text-transform: uppercase; background: var(--oq-ink-05); font-weight: 600;}
+  .trade-row .side.buy { color: var(--oq-up-fg); font-weight: 700;}
+  .trade-row .side.sell { color: var(--oq-down-fg); font-weight: 700;}
+  .trade-row .sym { font-weight: 600; color: var(--oq-ink-90);}
+  .trade-row .px, .trade-row .qty, .trade-row .pnl, .trade-row .time { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums;}
+  .trade-row .pnl.up { color: var(--oq-up-fg); font-weight: 600;}
+  .trade-row .pnl.down { color: var(--oq-down-fg); font-weight: 600;}
+
+  /* Right panel: AI agent */
+  .right { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-lg); display:flex; flex-direction:column; overflow: hidden;}
+  .r-head { padding: 14px 16px; border-bottom: 1px solid var(--oq-ink-15);}
+  .r-head .ml { font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--oq-ink-60); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;}
+  .r-head h3 { font-family: var(--oq-font-display); margin: 0; font-size: 16px; font-weight: 600; color: var(--oq-ink-90); display:flex; gap: 8px; align-items: center;}
+  .r-head h3 .agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--oq-up); box-shadow: 0 0 0 3px var(--oq-up-bg);}
+
+  /* Model selector */
+  .models { padding: 14px 16px; border-bottom: 1px dashed var(--oq-ink-15);}
+  .models .lab { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;}
+  .model-chip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--oq-ink-20); border-radius: 8px; margin-bottom: 6px; font-size: 13px; color: var(--oq-ink-80); cursor: pointer; background: var(--oq-ink-05);}
+  .model-chip.active { border-color: var(--oq-ink-90); background: var(--oq-ink-0); box-shadow: var(--oq-shadow-sm);}
+  .model-chip .mi { width: 26px; height: 26px; border-radius: 6px; display:grid; place-items:center; font-family: var(--oq-font-mono); font-weight: 700; font-size: 10px; color: white;}
+  .model-chip .mi.anth { background: #c96442;}
+  .model-chip .mi.oai { background: #10a37f;}
+  .model-chip .mi.gem { background: #4285f4;}
+  .model-chip .mi.ollama { background: var(--oq-ink-90);}
+  .model-chip .mi.deep { background: #6b4bdc;}
+  .model-chip .mn { font-weight: 500; color: var(--oq-ink-90);}
+  .model-chip .mx { margin-left: auto; font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60);}
+  .model-chip .mx.ok { color: var(--oq-up-fg);}
+  .model-chip .mx.err { color: var(--oq-down-fg);}
+
+  .api-add { width: 100%; padding: 8px; border: 1px dashed var(--oq-ink-30); background: transparent; border-radius: 8px; font-size: 12px; color: var(--oq-ink-60); cursor: pointer; margin-top: 4px; font-family: var(--oq-font-sans);}
+  .api-add:hover { border-color: var(--oq-ink-60); color: var(--oq-ink-90);}
+
+  /* Agent capabilities toggle row */
+  .caps { padding: 12px 16px; border-bottom: 1px dashed var(--oq-ink-15); display: flex; gap: 6px; flex-wrap: wrap;}
+  .cap { padding: 4px 9px; border-radius: 999px; border: 1px solid var(--oq-ink-20); font-size: 11px; color: var(--oq-ink-60); cursor: pointer; display:flex; gap: 4px; align-items: center;}
+  .cap.on { background: var(--oq-ink-90); color: white; border-color: var(--oq-ink-90);}
+
+  /* Conversation */
+  .chat { flex: 1; overflow-y: auto; padding: 14px 16px; display:flex; flex-direction:column; gap: 14px;}
+  .msg { font-size: 13px; line-height: 1.6;}
+  .msg.user .bub { background: var(--oq-ink-10); padding: 9px 13px; border-radius: 14px 14px 2px 14px; margin-left: auto; max-width: 85%; color: var(--oq-ink-90);}
+  .msg.user { display: flex;}
+  .msg.agent .ml { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60); letter-spacing: 0.1em; margin-bottom: 5px; display: flex; gap: 6px; align-items: center; text-transform: uppercase;}
+  .msg.agent .bub { color: var(--oq-ink-90);}
+  .msg.agent .tool-call { margin: 8px 0; padding: 9px 12px; background: var(--oq-ink-05); border: 1px dashed var(--oq-ink-20); border-radius: 7px; font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-80);}
+  .msg.agent .tool-call .th { color: var(--oq-info); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px;}
+  .msg.agent .tool-call code { color: var(--oq-brand-accent);}
+
+  .chat-inp { padding: 12px 14px; border-top: 1px solid var(--oq-ink-15); background: var(--oq-ink-05);}
+  .chat-inp .box { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: 10px; padding: 8px 10px;}
+  .chat-inp textarea { width: 100%; border: none; outline: none; font-family: var(--oq-font-sans); font-size: 13px; color: var(--oq-ink-90); background: transparent; resize: none; min-height: 36px; line-height: 1.5;}
+  .chat-inp textarea::placeholder { color: var(--oq-ink-40);}
+  .chat-inp .row { display:flex; gap: 6px; align-items: center; margin-top: 6px;}
+  .chat-inp .row .pill { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60); padding: 2px 6px; background: var(--oq-ink-10); border-radius: 3px;}
+  .chat-inp .row .send { margin-left: auto; padding: 5px 12px; border: none; border-radius: 6px; background: var(--oq-ink-90); color: white; font-size: 12px; font-weight: 600; cursor: pointer;}
+
+  @media (max-width: 1200px) {
+    main { grid-template-columns: 200px 1fr 320px;}
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; overflow-y: auto;}
+    .sidebar, .right { max-height: none;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">OQ</div>
+    <div class="brand">OpenQuant <small>v2.0</small></div>
+    <span class="crumb">AGENTS · <b>动量因子 · 日频</b></span>
+    <div class="tabs">
+      <button>行情</button>
+      <button>图表</button>
+      <button>新闻</button>
+      <button class="on">Agents & 策略 <span class="badge">8</span></button>
+      <button>学习</button>
+    </div>
+    <div class="top-right">
+      <button class="btn-primary">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        新建策略
+      </button>
+      <div class="avatar">W</div>
+    </div>
+  </div>
+
+  <main>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sb-head">
+        <h3>我的 Agents</h3>
+        <button class="add">+</button>
+      </div>
+
+      <div class="sb-section">
+        <div class="sl">实盘运行 · 2</div>
+        <div class="sb-item on"><span class="dot live"></span>动量因子 · 日频<span class="pnl up">+18.4%</span></div>
+        <div class="sb-item"><span class="dot live"></span>BTC 网格 · 5m<span class="pnl up">+4.8%</span></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sl">模拟盘 · 3</div>
+        <div class="sb-item"><span class="dot paper"></span>双均线突破<span class="pnl up">+2.1%</span></div>
+        <div class="sb-item"><span class="dot paper"></span>新闻情绪 Alpha<span class="pnl down">-0.6%</span></div>
+        <div class="sb-item"><span class="dot paper"></span>期权 Delta 中性<span class="pnl up">+1.2%</span></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sl">已暂停 · 1</div>
+        <div class="sb-item"><span class="dot paused"></span>小市值反转</div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sl">草稿 · 2</div>
+        <div class="sb-item"><span class="dot draft"></span>跨期套利 v2</div>
+        <div class="sb-item"><span class="dot draft"></span>LSTM 短线预测</div>
+      </div>
+
+      <div style="margin-top: auto; padding: 12px 14px; border-top: 1px solid var(--oq-ink-15); font-size: 11px; color: var(--oq-ink-60);">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 4px;"><span>本月总 P&L</span><span class="oq-mono" style="color: var(--oq-up-fg); font-weight: 600;">+¥42,812</span></div>
+        <div style="display:flex; justify-content: space-between;"><span>API 调用 / 天</span><span class="oq-mono" style="color: var(--oq-ink-80);">1,284</span></div>
+      </div>
+    </aside>
+
+    <!-- Center -->
+    <section class="center">
+      <div class="strategy-header">
+        <div class="mt">
+          <span class="status-pill">● LIVE</span>
+          <span>STRATEGY · A股 · 日频</span>
+          <span>·  运行 142 天</span>
+        </div>
+        <h1>动量因子 · 日频</h1>
+        <p class="sub">12 个月 - 1 个月动量因子 · 市值 &gt; 100 亿 · 每日收盘前 15 分钟调仓 · 持仓 20 只</p>
+        <div class="actions">
+          <button class="primary"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> 暂停</button>
+          <button><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4"/></svg> 重新回测</button>
+          <button>编辑代码</button>
+          <button>复制</button>
+          <button class="danger">归档</button>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="l">Total Return</div><div class="v up">+18.42%</div><div class="d">vs 沪深 300 +4.2%</div></div>
+        <div class="metric"><div class="l">Sharpe</div><div class="v">2.14</div><div class="d">夏普比率</div></div>
+        <div class="metric"><div class="l">Max DD</div><div class="v down">-6.8%</div><div class="d">2024-09-12</div></div>
+        <div class="metric"><div class="l">Win Rate</div><div class="v">58.3%</div><div class="d">326 / 559</div></div>
+        <div class="metric"><div class="l">Turnover</div><div class="v">1.82x</div><div class="d">年化换手</div></div>
+      </div>
+
+      <div class="content-body">
+        <div class="sub-tabs">
+          <button class="on">表现</button>
+          <button>持仓</button>
+          <button>成交</button>
+          <button>代码</button>
+          <button>参数</button>
+          <button>日志</button>
+        </div>
+
+        <div class="curve-block">
+          <div class="curve-head">
+            <h4>净值曲线 · Equity Curve</h4>
+            <div class="tf-seg">
+              <button>1M</button>
+              <button>3M</button>
+              <button class="on">6M</button>
+              <button>1Y</button>
+              <button>全部</button>
+            </div>
+          </div>
+          <svg viewBox="0 0 800 240" preserveAspectRatio="none" width="100%" height="240">
+            <defs>
+              <linearGradient id="eqGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#0D7A6B" stop-opacity="0.2"/>
+                <stop offset="1" stop-color="#0D7A6B" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid -->
+            <line x1="0" x2="800" y1="60" y2="60" stroke="#e5e1d5" stroke-dasharray="2,3"/>
+            <line x1="0" x2="800" y1="120" y2="120" stroke="#e5e1d5" stroke-dasharray="2,3"/>
+            <line x1="0" x2="800" y1="180" y2="180" stroke="#e5e1d5" stroke-dasharray="2,3"/>
+            <text x="4" y="58" font-family="SF Mono" font-size="9" fill="#9a9481">+20%</text>
+            <text x="4" y="118" font-family="SF Mono" font-size="9" fill="#9a9481">+10%</text>
+            <text x="4" y="178" font-family="SF Mono" font-size="9" fill="#9a9481">0%</text>
+
+            <!-- Benchmark -->
+            <path d="M0,180 L80,178 L160,170 L240,172 L320,162 L400,160 L480,156 L560,154 L640,150 L720,152 L800,148" fill="none" stroke="#9a9481" stroke-width="1.2" stroke-dasharray="3,3"/>
+            <!-- Strategy area -->
+            <path d="M0,180 L80,170 L160,150 L240,148 L320,125 L400,115 L480,102 L560,98 L640,80 L720,70 L800,55 L800,240 L0,240 Z" fill="url(#eqGrad)"/>
+            <path d="M0,180 L80,170 L160,150 L240,148 L320,125 L400,115 L480,102 L560,98 L640,80 L720,70 L800,55" fill="none" stroke="#0D7A6B" stroke-width="2"/>
+            <!-- DD marker -->
+            <circle cx="320" cy="125" r="3" fill="#B83565"/>
+            <text x="326" y="122" font-family="SF Mono" font-size="9" fill="#8f1f4a">MDD -6.8%</text>
+          </svg>
+        </div>
+
+        <div class="trades">
+          <h4>最近成交</h4>
+          <div class="trade-row head">
+            <span>时间</span><span>股票</span><span style="text-align:right;">价格</span><span style="text-align:center;">方向</span><span style="text-align:right;">数量</span><span style="text-align:right;">P&L</span><span style="text-align:right;">原因</span>
+          </div>
+          <div class="trade-row">
+            <span class="time">14:45:02</span><span class="sym">600519 贵州茅台</span><span class="px" style="text-align:right;">1,487.24</span><span class="side buy" style="text-align:center;">买</span><span class="qty" style="text-align:right;">100</span><span class="pnl up" style="text-align:right;">—</span><span style="text-align:right; color: var(--oq-ink-60); font-size: 11px;">入仓</span>
+          </div>
+          <div class="trade-row">
+            <span class="time">14:45:00</span><span class="sym">NVDA</span><span class="px" style="text-align:right;">892.55</span><span class="side buy" style="text-align:center;">买</span><span class="qty" style="text-align:right;">50</span><span class="pnl up" style="text-align:right;">—</span><span style="text-align:right; color: var(--oq-ink-60); font-size: 11px;">入仓</span>
+          </div>
+          <div class="trade-row">
+            <span class="time">14:44:58</span><span class="sym">300750 宁德时代</span><span class="px" style="text-align:right;">244.20</span><span class="side sell" style="text-align:center;">卖</span><span class="qty" style="text-align:right;">200</span><span class="pnl down" style="text-align:right;">-1,820</span><span style="text-align:right; color: var(--oq-ink-60); font-size: 11px;">因子失效</span>
+          </div>
+          <div class="trade-row">
+            <span class="time">昨 14:45</span><span class="sym">TSLA</span><span class="px" style="text-align:right;">186.42</span><span class="side sell" style="text-align:center;">卖</span><span class="qty" style="text-align:right;">80</span><span class="pnl up" style="text-align:right;">+1,240</span><span style="text-align:right; color: var(--oq-ink-60); font-size: 11px;">止盈</span>
+          </div>
+          <div class="trade-row">
+            <span class="time">昨 14:45</span><span class="sym">000858 五粮液</span><span class="px" style="text-align:right;">161.86</span><span class="side buy" style="text-align:center;">买</span><span class="qty" style="text-align:right;">300</span><span class="pnl up" style="text-align:right;">+842</span><span style="text-align:right; color: var(--oq-ink-60); font-size: 11px;">入仓</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: AI + API config -->
+    <aside class="right">
+      <div class="r-head">
+        <div class="ml">AI AGENT · 策略协作</div>
+        <h3>
+          <span class="agent-dot"></span>
+          Quant Copilot
+        </h3>
+      </div>
+
+      <div class="models">
+        <div class="lab">模型 · 已连接 4</div>
+        <div class="model-chip">
+          <div class="mi anth">AN</div>
+          <div>
+            <div class="mn">Claude 4.5 Sonnet</div>
+            <div style="font-size: 10.5px; color: var(--oq-ink-60); font-family: var(--oq-font-mono);">anthropic · sk-...4J2K</div>
+          </div>
+          <div class="mx ok">● 正常</div>
+        </div>
+        <div class="model-chip active">
+          <div class="mi oai">AI</div>
+          <div>
+            <div class="mn">GPT-5</div>
+            <div style="font-size: 10.5px; color: var(--oq-ink-60); font-family: var(--oq-font-mono);">openai · sk-...9H7P</div>
+          </div>
+          <div class="mx ok">● 使用中</div>
+        </div>
+        <div class="model-chip">
+          <div class="mi gem">G</div>
+          <div>
+            <div class="mn">Gemini 2.0 Pro</div>
+            <div style="font-size: 10.5px; color: var(--oq-ink-60); font-family: var(--oq-font-mono);">google · AIza...2X8L</div>
+          </div>
+          <div class="mx ok">● 正常</div>
+        </div>
+        <div class="model-chip">
+          <div class="mi ollama">L</div>
+          <div>
+            <div class="mn">Qwen 2.5-72B (本地)</div>
+            <div style="font-size: 10.5px; color: var(--oq-ink-60); font-family: var(--oq-font-mono);">ollama · localhost:11434</div>
+          </div>
+          <div class="mx err">● 离线</div>
+        </div>
+        <div class="model-chip">
+          <div class="mi deep">DS</div>
+          <div>
+            <div class="mn">DeepSeek V3</div>
+            <div style="font-size: 10.5px; color: var(--oq-ink-60); font-family: var(--oq-font-mono);">deepseek · sk-...K8T5</div>
+          </div>
+          <div class="mx ok">● 正常</div>
+        </div>
+        <button class="api-add">+ 添加 API / 本地模型</button>
+      </div>
+
+      <div class="caps">
+        <span style="font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--oq-ink-60); text-transform: uppercase; width: 100%; margin-bottom: 4px;">能力 · 工具</span>
+        <div class="cap on">📊 读取行情</div>
+        <div class="cap on">📈 读取持仓</div>
+        <div class="cap on">🔬 运行回测</div>
+        <div class="cap">✏️ 修改代码</div>
+        <div class="cap">🚀 下单</div>
+        <div class="cap">📧 发送提醒</div>
+      </div>
+
+      <div class="chat">
+        <div class="msg user"><div class="bub">动量因子最近 3 天回撤 2%，能帮我分析下原因吗？要不要调参？</div></div>
+        <div class="msg agent">
+          <div class="ml"><span class="agent-dot" style="width:6px; height:6px; border-radius: 50%; background: var(--oq-up); display: inline-block;"></span> Copilot · gpt-5</div>
+          <div class="bub">我已经分析了最近 3 天的持仓与因子表现：</div>
+          <div class="tool-call">
+            <div class="th">▸ tool · run_attribution</div>
+            <div style="margin-top: 4px;">period=<code>"3d"</code> strategy=<code>"momentum_daily"</code></div>
+          </div>
+          <div class="bub">
+            <strong>主要回撤来源：</strong>
+            <ul style="margin: 6px 0; padding-left: 20px;">
+              <li>新能源链回调 —— <code style="font-family: var(--oq-font-mono); background: var(--oq-down-bg); padding: 1px 4px; border-radius: 3px; color: var(--oq-down-fg);">-1.4%</code>（宁德、比亚迪贡献 -62%）</li>
+              <li>贵金属获利了结 —— <code style="font-family: var(--oq-font-mono); background: var(--oq-down-bg); padding: 1px 4px; border-radius: 3px; color: var(--oq-down-fg);">-0.6%</code></li>
+            </ul>
+            <strong>建议：</strong>暂不调参。12 个月动量因子最近 90 日 IC 仍为 0.038，统计上显著。当前回撤在历史波动 1σ 内。
+          </div>
+        </div>
+        <div class="msg user"><div class="bub">如果我想加一个行业中性约束，改动大吗？</div></div>
+        <div class="msg agent">
+          <div class="ml"><span class="agent-dot" style="width:6px; height:6px; border-radius: 50%; background: var(--oq-up); display: inline-block;"></span> Copilot · gpt-5 · 思考中 ···</div>
+          <div class="tool-call">
+            <div class="th">▸ tool · read_code</div>
+            <div style="margin-top: 4px;">file=<code>"momentum_daily.py"</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-inp">
+        <div class="box">
+          <textarea placeholder="问 AI 关于这条策略的任何问题 —— 回撤归因、参数优化、代码修改…"></textarea>
+          <div class="row">
+            <span class="pill">@策略</span>
+            <span class="pill">@持仓</span>
+            <span class="pill">+ 附加</span>
+            <button class="send">发送 ⏎</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+</body>
+</html>

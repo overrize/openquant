@@ -1,0 +1,180 @@
+/* OpenQuant Design System Tokens
+ * Light-first, warm-neutral, science-technology aesthetic
+ * 青涨 / 品红跌 — modern, color-blind friendly gain/loss
+ */
+
+:root {
+  /* ============ Neutrals (warm, paper-like) ============ */
+  --oq-ink-0: #ffffff;
+  --oq-ink-05: #fafaf7;       /* app bg */
+  --oq-ink-10: #f4f3ee;       /* panel bg */
+  --oq-ink-15: #ebe9e1;       /* subtle fills */
+  --oq-ink-20: #ddd9cc;       /* divider strong */
+  --oq-ink-30: #c4bead;       /* border */
+  --oq-ink-40: #9a9481;       /* muted */
+  --oq-ink-60: #605a4a;       /* text secondary */
+  --oq-ink-80: #2b2820;       /* text primary */
+  --oq-ink-90: #1a1812;       /* headings */
+  --oq-ink-95: #0f0e0a;       /* max contrast */
+
+  /* ============ Brand (graphite, not rainbow) ============ */
+  --oq-brand: #2b2820;
+  --oq-brand-accent: #3a5f5a;  /* muted teal — a whisper, not a shout */
+
+  /* ============ Gain / Loss — 青涨 / 品红跌 ============ */
+  --oq-up: #0d7a6b;            /* deep teal-cyan — gain */
+  --oq-up-fg: #0a5b50;
+  --oq-up-bg: #d9efe9;         /* heatmap 1 */
+  --oq-up-bg-2: #a8dcd0;       /* heatmap 2 */
+  --oq-up-bg-3: #5cc0ae;       /* heatmap 3 — strong */
+
+  --oq-down: #b83565;          /* deep magenta — loss */
+  --oq-down-fg: #8f1f4a;
+  --oq-down-bg: #f5dee7;       /* heatmap 1 */
+  --oq-down-bg-2: #e9b2c5;     /* heatmap 2 */
+  --oq-down-bg-3: #d37aa0;     /* heatmap 3 — strong */
+
+  --oq-flat: #9a9481;
+
+  /* ============ Semantic ============ */
+  --oq-warn: #b8742b;          /* amber, earthy */
+  --oq-warn-bg: #f4e6cf;
+  --oq-info: #3a5f7a;          /* slate blue */
+  --oq-info-bg: #dde8f0;
+
+  /* ============ Radii — soft but not rounded-candy ============ */
+  --oq-r-xs: 3px;
+  --oq-r-sm: 6px;
+  --oq-r-md: 10px;
+  --oq-r-lg: 14px;
+  --oq-r-xl: 20px;
+
+  /* ============ Shadows — layered, paper-like ============ */
+  --oq-shadow-sm: 0 1px 0 rgba(43,40,32,0.04), 0 1px 2px rgba(43,40,32,0.06);
+  --oq-shadow-md: 0 1px 0 rgba(43,40,32,0.04), 0 4px 12px -2px rgba(43,40,32,0.08);
+  --oq-shadow-lg: 0 1px 0 rgba(43,40,32,0.04), 0 12px 32px -8px rgba(43,40,32,0.14);
+  --oq-shadow-focus: 0 0 0 3px rgba(13,122,107,0.18);
+
+  /* ============ Typography ============ */
+  --oq-font-sans: "PingFang SC", "Source Han Sans SC", "Noto Sans SC", -apple-system, "Helvetica Neue", sans-serif;
+  --oq-font-mono: "SF Mono", "JetBrains Mono", "Menlo", ui-monospace, monospace;
+  --oq-font-display: "Source Han Serif SC", "Songti SC", Georgia, serif;
+
+  /* Type scale */
+  --oq-t-micro: 10px;
+  --oq-t-xs: 11px;
+  --oq-t-sm: 13px;
+  --oq-t-md: 14px;
+  --oq-t-lg: 16px;
+  --oq-t-xl: 20px;
+  --oq-t-2xl: 26px;
+  --oq-t-3xl: 34px;
+  --oq-t-4xl: 48px;
+
+  /* ============ Spacing (4px base) ============ */
+  --oq-s-1: 4px;
+  --oq-s-2: 8px;
+  --oq-s-3: 12px;
+  --oq-s-4: 16px;
+  --oq-s-5: 20px;
+  --oq-s-6: 24px;
+  --oq-s-8: 32px;
+  --oq-s-10: 40px;
+  --oq-s-12: 48px;
+
+  /* ============ Easing ============ */
+  --oq-ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --oq-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+[data-theme="dark"] {
+  --oq-ink-0: #0e0d0a;
+  --oq-ink-05: #131210;
+  --oq-ink-10: #1b1a16;
+  --oq-ink-15: #24231d;
+  --oq-ink-20: #2e2c24;
+  --oq-ink-30: #45423a;
+  --oq-ink-40: #6b6757;
+  --oq-ink-60: #9e9885;
+  --oq-ink-80: #e0dccc;
+  --oq-ink-90: #f0ecdd;
+  --oq-ink-95: #fafaf4;
+
+  --oq-brand: #f0ecdd;
+  --oq-brand-accent: #7fbeb2;
+
+  --oq-up: #5cc0ae;
+  --oq-up-fg: #a8dcd0;
+  --oq-up-bg: #143730;
+  --oq-up-bg-2: #1f5249;
+  --oq-up-bg-3: #2f7a6c;
+
+  --oq-down: #e07aa0;
+  --oq-down-fg: #f0a5c0;
+  --oq-down-bg: #3a1726;
+  --oq-down-bg-2: #5a2a3e;
+  --oq-down-bg-3: #8a4365;
+
+  --oq-warn: #d99a5b;
+  --oq-warn-bg: #3a2f1c;
+  --oq-info: #7fa5c2;
+  --oq-info-bg: #1c2c3a;
+
+  --oq-shadow-sm: 0 1px 0 rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
+  --oq-shadow-md: 0 1px 0 rgba(0,0,0,0.3), 0 6px 16px -2px rgba(0,0,0,0.5);
+  --oq-shadow-lg: 0 1px 0 rgba(0,0,0,0.3), 0 16px 40px -8px rgba(0,0,0,0.6);
+}
+
+/* ============ Base reset ============ */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--oq-ink-05);
+  color: var(--oq-ink-80);
+  font-family: var(--oq-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+}
+
+* { box-sizing: border-box; }
+
+.oq-mono { font-family: var(--oq-font-mono); font-feature-settings: "tnum" 1, "zero" 1; }
+.oq-tnum { font-variant-numeric: tabular-nums; }
+.oq-display { font-family: var(--oq-font-display); letter-spacing: -0.01em; }
+
+/* ============ Tick flash animations ============ */
+@keyframes oq-tick-up {
+  0%   { background-color: var(--oq-up-bg-3); }
+  100% { background-color: transparent; }
+}
+@keyframes oq-tick-down {
+  0%   { background-color: var(--oq-down-bg-3); }
+  100% { background-color: transparent; }
+}
+.oq-flash-up { animation: oq-tick-up 0.7s var(--oq-ease-out); }
+.oq-flash-down { animation: oq-tick-down 0.7s var(--oq-ease-out); }
+
+@keyframes oq-scale-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.oq-scale-pop { animation: oq-scale-pop 0.5s var(--oq-ease-out); }
+
+/* ============ Focus ring ============ */
+.oq-focus:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: var(--oq-shadow-focus);
+  border-radius: var(--oq-r-sm);
+}
+
+/* ============ Scrollbar ============ */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--oq-ink-20); border-radius: 4px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--oq-ink-30); }

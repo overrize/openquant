@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>OpenQuant · 设置</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--oq-ink-05); }
+
+  .shell { display: grid; grid-template-rows: 52px 1fr; height: 100vh; }
+
+  /* ============ Top bar ============ */
+  .topbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 18px; border-bottom: 1px solid var(--oq-ink-20);
+    background: var(--oq-ink-05);
+  }
+  .logo {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--oq-ink-90); color: var(--oq-ink-05);
+    display: grid; place-items: center;
+    font-family: var(--oq-font-display); font-weight: 700; font-size: 14px;
+  }
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px;}
+  .crumb a { color: var(--oq-ink-60); text-decoration: none; }
+  .crumb a:hover { color: var(--oq-ink-90); }
+  .crumb .sep { color: var(--oq-ink-30); }
+  .crumb .cur { color: var(--oq-ink-90); font-weight: 600; }
+  .top-spacer { flex: 1; }
+  .top-search {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 10px; background: var(--oq-ink-10);
+    border: 1px solid var(--oq-ink-15); border-radius: var(--oq-r-md);
+    font-size: 12px; color: var(--oq-ink-60); cursor: pointer; min-width: 220px;
+  }
+  .top-search .kbd {
+    margin-left: auto; font-family: var(--oq-font-mono); font-size: 10.5px;
+    color: var(--oq-ink-40); padding: 1px 5px; border: 1px solid var(--oq-ink-20);
+    border-radius: 3px;
+  }
+  .top-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(140deg, var(--oq-up-bg-2), var(--oq-up-bg-3));
+    display: grid; place-items: center;
+    font-family: var(--oq-font-display); font-weight: 600; font-size: 12px;
+    color: var(--oq-up-fg);
+  }
+
+  /* ============ Layout: sidebar + content + aside ============ */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 320px;
+    height: 100%; overflow: hidden;
+  }
+
+  /* sidebar */
+  .side {
+    border-right: 1px solid var(--oq-ink-15);
+    background: var(--oq-ink-05);
+    overflow-y: auto;
+    padding: 24px 12px 24px 18px;
+  }
+  .side h4 {
+    font-family: var(--oq-font-mono); font-size: 11px;
+    letter-spacing: 0.16em; color: var(--oq-ink-40);
+    margin: 18px 8px 6px; font-weight: 500; text-transform: uppercase;
+  }
+  .side h4:first-child { margin-top: 0; }
+  .side a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; font-size: 13px; color: var(--oq-ink-60);
+    border-radius: var(--oq-r-sm); text-decoration: none;
+    cursor: pointer; transition: all 140ms var(--oq-ease-out);
+    margin: 1px 0;
+  }
+  .side a:hover { background: var(--oq-ink-10); color: var(--oq-ink-90); }
+  .side a.cur {
+    background: var(--oq-ink-0); color: var(--oq-ink-90);
+    font-weight: 600; box-shadow: var(--oq-shadow-sm);
+  }
+  .side a svg { color: var(--oq-ink-40); flex-shrink: 0; }
+  .side a.cur svg { color: var(--oq-brand-accent); }
+  .side a .badge {
+    margin-left: auto; font-family: var(--oq-font-mono); font-size: 10px;
+    background: var(--oq-warn-bg); color: var(--oq-warn);
+    padding: 0 5px; border-radius: 3px;
+  }
+
+  /* content */
+  .content {
+    overflow-y: auto;
+    padding: 32px 40px 60px;
+    background: var(--oq-ink-05);
+  }
+  .pg-head {
+    margin-bottom: 28px; display: flex; align-items: flex-end;
+    justify-content: space-between; gap: 24px;
+    border-bottom: 1px solid var(--oq-ink-15); padding-bottom: 18px;
+  }
+  .pg-head .eyebrow {
+    font-family: var(--oq-font-mono); font-size: 11px;
+    color: var(--oq-ink-40); letter-spacing: 0.18em;
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .pg-head h1 {
+    font-family: var(--oq-font-display); font-size: 30px;
+    letter-spacing: -0.01em; color: var(--oq-ink-90);
+    margin: 0; font-weight: 600;
+  }
+  .pg-head .sub { color: var(--oq-ink-60); font-size: 13px; margin-top: 6px; max-width: 440px; line-height: 1.55;}
+  .pg-head .saved {
+    font-family: var(--oq-font-mono); font-size: 11px;
+    color: var(--oq-ink-40); letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pg-head .saved::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--oq-up); animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+  /* sections */
+  section.card {
+    background: var(--oq-ink-0);
+    border: 1px solid var(--oq-ink-15);
+    border-radius: var(--oq-r-lg);
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  section.card > header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--oq-ink-15);
+    display: flex; align-items: center; gap: 12px;
+  }
+  section.card > header h2 {
+    font-family: var(--oq-font-display); font-size: 17px;
+    color: var(--oq-ink-90); margin: 0; font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  section.card > header .num {
+    font-family: var(--oq-font-mono); font-size: 11px;
+    color: var(--oq-ink-40);
+  }
+  section.card > header .desc {
+    font-size: 12px; color: var(--oq-ink-60); margin-left: auto;
+  }
+
+  .row {
+    display: grid; grid-template-columns: 1fr 320px;
+    gap: 24px; padding: 18px 22px;
+    border-bottom: 1px solid var(--oq-ink-15);
+    align-items: start;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .lab {
+    font-size: 13px; color: var(--oq-ink-90); font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .row .hint {
+    font-size: 12.5px; color: var(--oq-ink-60); line-height: 1.55;
+  }
+  .row .ctl { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+
+  /* form ctls */
+  .input, .select {
+    width: 100%; padding: 9px 12px;
+    background: var(--oq-ink-05); border: 1px solid var(--oq-ink-20);
+    border-radius: var(--oq-r-md); font: 13px var(--oq-font-sans);
+    color: var(--oq-ink-90); outline: 0;
+    font-feature-settings: "tnum" 1;
+  }
+  .input:focus, .select:focus {
+    border-color: var(--oq-brand-accent); background: var(--oq-ink-0);
+    box-shadow: var(--oq-shadow-focus);
+  }
+  .input.mono { font-family: var(--oq-font-mono); font-size: 12px;}
+
+  .seg {
+    display: inline-grid; grid-auto-flow: column;
+    background: var(--oq-ink-10); border: 1px solid var(--oq-ink-15);
+    border-radius: var(--oq-r-md); padding: 3px;
+  }
+  .seg button {
+    background: transparent; border: 0; padding: 6px 14px;
+    font: 500 12.5px var(--oq-font-sans); color: var(--oq-ink-60); cursor: pointer;
+    border-radius: var(--oq-r-sm); transition: all 140ms var(--oq-ease-out);
+    min-width: 60px;
+  }
+  .seg button.on {
+    background: var(--oq-ink-0); color: var(--oq-ink-90);
+    box-shadow: var(--oq-shadow-sm); font-weight: 600;
+  }
+
+  .switch {
+    width: 38px; height: 22px; border-radius: 11px;
+    background: var(--oq-ink-20); border: 0; padding: 0;
+    position: relative; cursor: pointer;
+    transition: background 200ms var(--oq-ease-out);
+  }
+  .switch::after {
+    content: ""; position: absolute; left: 2px; top: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--oq-ink-0); box-shadow: var(--oq-shadow-sm);
+    transition: left 200ms var(--oq-ease-out);
+  }
+  .switch.on { background: var(--oq-brand-accent); }
+  .switch.on::after { left: 18px; }
+
+  /* radio swatches (theme + accent) */
+  .swatches { display: flex; gap: 10px; }
+  .sw {
+    width: 56px; height: 38px; border-radius: var(--oq-r-md);
+    border: 2px solid var(--oq-ink-20); cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: all 140ms var(--oq-ease-out);
+  }
+  .sw.on { border-color: var(--oq-ink-90); box-shadow: var(--oq-shadow-md);}
+  .sw .lbl {
+    position: absolute; bottom: 2px; right: 4px;
+    font: 9px var(--oq-font-mono); color: rgba(0,0,0,0.55); letter-spacing: 0.05em;
+  }
+  .sw-paper { background: linear-gradient(135deg, #fafaf7 50%, #f0ede4 50%);}
+  .sw-night { background: linear-gradient(135deg, #131210 50%, #1b1a16 50%);}
+  .sw-night .lbl { color: rgba(255,255,255,0.6);}
+  .sw-sepia { background: linear-gradient(135deg, #f7f1e6 50%, #ebe1cb 50%);}
+  .sw-mono  { background: linear-gradient(135deg, #f5f5f5 50%, #2b2820 50%);}
+  .sw-mono .lbl { color: rgba(255,255,255,0.7);}
+
+  /* color combo */
+  .combo { display: flex; gap: 8px;}
+  .combo .px {
+    flex: 1; padding: 10px 12px; border-radius: var(--oq-r-md);
+    border: 2px solid transparent; cursor: pointer; text-align: center;
+    font: 600 12px var(--oq-font-mono); letter-spacing: 0.04em;
+    transition: all 140ms var(--oq-ease-out);
+  }
+  .combo .px.on { border-color: var(--oq-ink-90); }
+  .combo .px .a { font-size: 13px; }
+  .combo .px small { display: block; font-size: 10px; opacity: 0.7; margin-top: 2px; font-weight: 400; letter-spacing: 0.06em;}
+
+  /* api keys table */
+  .api-table {
+    width: 100%; border-collapse: collapse;
+  }
+  .api-table th, .api-table td {
+    padding: 12px 22px; text-align: left;
+    font-size: 13px; border-bottom: 1px solid var(--oq-ink-15);
+  }
+  .api-table th {
+    font-family: var(--oq-font-mono); font-size: 10.5px;
+    color: var(--oq-ink-40); font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--oq-ink-10);
+  }
+  .api-table tbody tr:last-child td { border-bottom: 0; }
+  .api-table tbody tr:hover { background: var(--oq-ink-10); }
+  .api-table .key {
+    font-family: var(--oq-font-mono); font-size: 12px;
+    color: var(--oq-ink-80);
+  }
+  .api-table .ven {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-weight: 600; color: var(--oq-ink-90);
+  }
+  .api-table .ven .vd {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--oq-up);
+  }
+  .api-table .ven .vd.warn { background: var(--oq-warn);}
+  .api-table .ven .vd.off { background: var(--oq-ink-30);}
+  .api-table .scope {
+    font-family: var(--oq-font-mono); font-size: 10.5px;
+    color: var(--oq-ink-60); padding: 2px 6px;
+    background: var(--oq-ink-10); border-radius: 3px; margin-right: 4px;
+  }
+  .api-table .act {
+    color: var(--oq-ink-40); cursor: pointer; padding: 0 4px;
+  }
+  .api-table .act:hover { color: var(--oq-ink-90); }
+  .api-table .danger:hover { color: var(--oq-down); }
+
+  .add-key {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin: 14px 22px 18px; padding: 8px 14px;
+    background: var(--oq-ink-0); border: 1px dashed var(--oq-ink-30);
+    border-radius: var(--oq-r-md);
+    font: 600 12.5px var(--oq-font-sans); color: var(--oq-ink-80);
+    cursor: pointer; transition: all 140ms var(--oq-ease-out);
+  }
+  .add-key:hover { border-color: var(--oq-brand-accent); color: var(--oq-brand-accent);}
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;}
+  .tile {
+    padding: 16px 20px; border-right: 1px solid var(--oq-ink-15);
+  }
+  .tile:last-child { border-right: 0; }
+  .tile .lab {
+    font: 500 10.5px var(--oq-font-mono); color: var(--oq-ink-40);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .tile .v {
+    font-family: var(--oq-font-display); font-size: 22px;
+    color: var(--oq-ink-90); font-weight: 600; letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .tile .v small {
+    font-family: var(--oq-font-mono); font-size: 11px;
+    margin-left: 6px; font-weight: 500;
+  }
+  .tile .v small.up { color: var(--oq-up); }
+  .tile .v small.dn { color: var(--oq-down); }
+
+  /* danger */
+  .danger-row {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 18px; padding: 16px 22px; align-items: center;
+    border-bottom: 1px solid var(--oq-ink-15);
+  }
+  .danger-row:last-child { border-bottom: 0;}
+  .danger-row .l { font-size: 13px; }
+  .danger-row .l b { display: block; color: var(--oq-down); margin-bottom: 2px; font-weight: 600;}
+  .danger-row .l span { color: var(--oq-ink-60); font-size: 12.5px;}
+  .btn-ghost {
+    padding: 7px 14px; background: transparent;
+    border: 1px solid var(--oq-down-bg-2); color: var(--oq-down);
+    border-radius: var(--oq-r-md); font: 600 12.5px var(--oq-font-sans);
+    cursor: pointer; transition: all 140ms var(--oq-ease-out);
+  }
+  .btn-ghost:hover { background: var(--oq-down-bg); border-color: var(--oq-down);}
+
+  /* aside */
+  .aside {
+    border-left: 1px solid var(--oq-ink-15);
+    background: var(--oq-ink-0);
+    overflow-y: auto;
+    padding: 24px 22px;
+  }
+  .aside .preview-wrap {
+    margin-bottom: 22px;
+  }
+  .aside h5 {
+    font-family: var(--oq-font-mono); font-size: 10.5px;
+    letter-spacing: 0.16em; color: var(--oq-ink-40);
+    margin: 0 0 10px; font-weight: 500; text-transform: uppercase;
+  }
+  .preview {
+    border: 1px solid var(--oq-ink-15); border-radius: var(--oq-r-md);
+    padding: 12px 14px; background: var(--oq-ink-05);
+    font-family: var(--oq-font-mono); font-size: 12px;
+  }
+  .preview .pr-row {
+    display: grid; grid-template-columns: 60px 1fr auto;
+    gap: 10px; padding: 4px 0; align-items: baseline;
+  }
+  .preview .pr-row:not(:last-child) {
+    border-bottom: 1px dashed var(--oq-ink-15);
+  }
+  .preview .pr-row b { color: var(--oq-ink-90); font-weight: 600;}
+  .preview .pr-row .px { color: var(--oq-ink-80); text-align: right; font-variant-numeric: tabular-nums;}
+  .preview .pr-row .ch.up { color: var(--oq-up); }
+  .preview .pr-row .ch.dn { color: var(--oq-down); }
+  .preview-cap {
+    font-size: 11px; color: var(--oq-ink-40); margin-top: 8px;
+    font-family: var(--oq-font-mono); letter-spacing: 0.04em;
+  }
+
+  .info-box {
+    background: var(--oq-info-bg); border-left: 3px solid var(--oq-info);
+    border-radius: var(--oq-r-sm); padding: 12px 14px; margin-bottom: 18px;
+    font-size: 12.5px; color: var(--oq-ink-80); line-height: 1.55;
+  }
+  .info-box b {
+    display: block; color: var(--oq-info); font-size: 11px;
+    font-family: var(--oq-font-mono); letter-spacing: 0.1em;
+    margin-bottom: 4px; text-transform: uppercase;
+  }
+
+  .audit { font-family: var(--oq-font-mono); font-size: 11.5px;}
+  .audit .ev {
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 10px; padding: 7px 0; align-items: baseline;
+    border-bottom: 1px dashed var(--oq-ink-15);
+  }
+  .audit .ev:last-child { border-bottom: 0;}
+  .audit .ev .t { color: var(--oq-ink-40); }
+  .audit .ev .d { color: var(--oq-ink-80); }
+  .audit .ev .d em { font-style: normal; color: var(--oq-up-fg);}
+  .audit .ev .d em.warn { color: var(--oq-warn);}
+
+  .footer-actions {
+    position: sticky; bottom: 0;
+    margin: 24px -40px -60px; padding: 14px 40px;
+    background: var(--oq-ink-05);
+    border-top: 1px solid var(--oq-ink-15);
+    display: flex; align-items: center; gap: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .footer-actions .changes {
+    font: 500 12px var(--oq-font-mono); color: var(--oq-warn);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .footer-actions .changes::before {
+    content: ""; width: 6px; height: 6px; background: var(--oq-warn); border-radius: 50%;
+  }
+  .footer-actions .sp { flex: 1; }
+  .btn-sec {
+    padding: 9px 16px; background: var(--oq-ink-0);
+    border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-md);
+    font: 500 13px var(--oq-font-sans); color: var(--oq-ink-80);
+    cursor: pointer;
+  }
+  .btn-sec:hover { background: var(--oq-ink-10);}
+  .btn-prm {
+    padding: 9px 18px; background: var(--oq-ink-90); color: var(--oq-ink-05);
+    border: 1px solid var(--oq-ink-90); border-radius: var(--oq-r-md);
+    font: 600 13px var(--oq-font-sans); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-prm:hover { background: var(--oq-ink-80); border-color: var(--oq-ink-80);}
+  .btn-prm .kbd {
+    font-family: var(--oq-font-mono); font-size: 10.5px;
+    color: rgba(250,250,247,0.55);
+    border: 1px solid rgba(250,250,247,0.18);
+    border-radius: 3px; padding: 0 5px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <div class="logo">Q</div>
+    <div class="crumb">
+      <a href="dashboard.html">盯盘</a>
+      <span class="sep">/</span>
+      <a href="#">个人</a>
+      <span class="sep">/</span>
+      <span class="cur">设置</span>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      搜索设置项 / 快捷指令
+      <span class="kbd">⌘ K</span>
+    </div>
+    <div class="top-avatar">A</div>
+  </div>
+
+  <!-- ============ BODY ============ -->
+  <div class="body-grid">
+
+    <!-- ============ SIDEBAR ============ -->
+    <nav class="side">
+      <h4>个人</h4>
+      <a class="cur" href="#account">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        账户
+      </a>
+      <a href="#security">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6Z"/></svg>
+        安全 · 2FA
+      </a>
+      <a href="#billing">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+        订阅 · 账单
+        <span class="badge">PRO</span>
+      </a>
+      <a href="#sessions">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+        登录设备
+      </a>
+
+      <h4>市场 / 数据</h4>
+      <a href="#api">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 1 7-7l3 3a5 5 0 0 1-7 7"/><path d="M14 11a5 5 0 0 1-7 7l-3-3a5 5 0 0 1 7-7"/></svg>
+        API 密钥 · 经纪商
+      </a>
+      <a href="#feed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        行情源
+      </a>
+      <a href="#watchlist">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 17 6 4-2-7 5-5h-7l-2-7-2 7H3l5 5-2 7Z"/></svg>
+        自选 · 分组
+      </a>
+      <a href="#alerts">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"/><path d="M10 21h4"/></svg>
+        提醒规则
+      </a>
+
+      <h4>外观 / 行为</h4>
+      <a href="#appearance">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>
+        主题 · 字号
+      </a>
+      <a href="#colors">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="13.5" r="2.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="6.5" cy="6.5" r="2.5"/></svg>
+        涨跌配色
+      </a>
+      <a href="#shortcut">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg>
+        快捷键
+      </a>
+
+      <h4>AI · 自动化</h4>
+      <a href="#ai">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+        AI 助手
+      </a>
+      <a href="#strategies">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 7-9"/><path d="M14 6h6v6"/></svg>
+        策略 · 回测
+      </a>
+      <a href="#notifications">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16M4 12h16M4 20h10"/></svg>
+        通知通道
+      </a>
+
+      <h4>合规</h4>
+      <a href="#privacy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg>
+        隐私 · 数据导出
+      </a>
+      <a href="#danger" style="color:var(--oq-down);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.7 2.5 17c-.6 1.3.3 3 1.7 3h15.6c1.4 0 2.3-1.7 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/></svg>
+        危险操作
+      </a>
+    </nav>
+
+    <!-- ============ CONTENT ============ -->
+    <main class="content">
+
+      <div class="pg-head">
+        <div>
+          <div class="eyebrow">— 个 人 / 账 户</div>
+          <h1>账户 & 偏好</h1>
+          <div class="sub">这些设置只影响你的视图。团队级配置请前往 <a href="#" style="color:var(--oq-brand-accent);">工作区设置</a>。</div>
+        </div>
+        <div class="saved">已自动保存 · 14:23:08</div>
+      </div>
+
+      <!-- =========== ACCOUNT =========== -->
+      <section class="card" id="account">
+        <header>
+          <span class="num">01</span>
+          <h2>身份</h2>
+          <div class="desc">显示在策略署名、协作评论与团队订阅中</div>
+        </header>
+        <div class="row">
+          <div>
+            <div class="lab">显示名</div>
+            <div class="hint">用于评论、协作和策略署名。可包含中英文与数字，2–24 字。</div>
+          </div>
+          <div class="ctl"><input class="input" value="Alice Chen / 陈一秋"/></div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">用户名 (handle)</div>
+            <div class="hint">公开主页地址：openquant.app/<b style="color:var(--oq-ink-90); font-family: var(--oq-font-mono);">@alice</b>。一旦修改，旧链接将失效 7 天后回收。</div>
+          </div>
+          <div class="ctl"><input class="input mono" value="@alice"/></div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">邮箱</div>
+            <div class="hint">用于登录、安全告警与对账单。已验证 ✓</div>
+          </div>
+          <div class="ctl"><input class="input" value="alice@quant.fund" type="email"/></div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">所在时区</div>
+            <div class="hint">影响 K 线时区、报告生成时间与 cron 触发。</div>
+          </div>
+          <div class="ctl">
+            <select class="select">
+              <option>Asia/Shanghai (UTC+8) · 当前</option>
+              <option>America/New_York (UTC-5)</option>
+              <option>Europe/London (UTC+0)</option>
+              <option>Asia/Tokyo (UTC+9)</option>
+              <option>UTC</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">语言 / 货币显示</div>
+            <div class="hint">仅影响界面文本与数字格式，不影响下单货币。</div>
+          </div>
+          <div class="ctl" style="gap: 8px;">
+            <div class="seg">
+              <button class="on">中文</button>
+              <button>EN</button>
+              <button>日本語</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========== APPEARANCE =========== -->
+      <section class="card" id="appearance">
+        <header>
+          <span class="num">02</span>
+          <h2>外观</h2>
+          <div class="desc">长时盯盘的眼睛是稀缺资源</div>
+        </header>
+        <div class="row">
+          <div>
+            <div class="lab">主题</div>
+            <div class="hint">"纸色" 是默认 —— 接近静态早报，长时阅读不刺眼。"夜色" 适合 23:00 之后或低光环境。</div>
+          </div>
+          <div class="ctl">
+            <div class="swatches">
+              <div class="sw sw-paper on" title="纸色 (默认)"><span class="lbl">PAPER</span></div>
+              <div class="sw sw-night" title="夜色"><span class="lbl">NIGHT</span></div>
+              <div class="sw sw-sepia" title="米色"><span class="lbl">SEPIA</span></div>
+              <div class="sw sw-mono" title="高对比"><span class="lbl">MONO</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">界面密度</div>
+            <div class="hint">紧凑模式将报价行高度从 32px 降至 26px，每屏多 3 只。</div>
+          </div>
+          <div class="ctl">
+            <div class="seg">
+              <button>紧凑</button>
+              <button class="on">标准</button>
+              <button>舒展</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">字号基准</div>
+            <div class="hint">影响所有文本（不影响数字字号），范围 13–17px。</div>
+          </div>
+          <div class="ctl" style="gap: 12px;">
+            <input type="range" min="13" max="17" value="14" style="flex:1; accent-color: var(--oq-brand-accent);"/>
+            <span class="input mono" style="width: 60px; text-align: center; padding: 6px;">14 px</span>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">数字使用衬线</div>
+            <div class="hint">关闭后所有价格使用 SF Mono；打开后大标题使用思源宋体（实验中）。</div>
+          </div>
+          <div class="ctl"><button class="switch" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">动画与 tick 闪烁</div>
+            <div class="hint">关闭可减少眼疲劳，但你将失去价格变化方向的视觉提示。</div>
+          </div>
+          <div class="ctl"><button class="switch on" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+      </section>
+
+      <!-- =========== COLORS =========== -->
+      <section class="card" id="colors">
+        <header>
+          <span class="num">03</span>
+          <h2>涨跌配色</h2>
+          <div class="desc">本平台默认 青涨 / 品红跌 (色弱友好)</div>
+        </header>
+        <div class="row">
+          <div>
+            <div class="lab">配色方案</div>
+            <div class="hint">"青涨品红跌" 在所有色弱类型中可分辨度最高。"红涨绿跌" 是 A 股惯例（与本系统其余视觉不符，谨慎）。</div>
+          </div>
+          <div class="ctl">
+            <div class="combo">
+              <div class="px on" style="background: var(--oq-up-bg); color: var(--oq-up-fg); border-color: var(--oq-ink-90);">
+                <span class="a">+1.42 / −0.83</span>
+                <small>青 / 品红 · 默认</small>
+              </div>
+              <div class="px" style="background: #f5dee7; color: #b83565;">
+                <span class="a">+1.42 / −0.83</span>
+                <small>红 / 绿 · A 股</small>
+              </div>
+              <div class="px" style="background: var(--oq-ink-10); color: var(--oq-ink-80);">
+                <span class="a">▲1.42 / ▼0.83</span>
+                <small>单色 + 箭头</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">热力图强度</div>
+            <div class="hint">控制板块/相关性矩阵中色块饱和度。低饱和更适合长时间观察。</div>
+          </div>
+          <div class="ctl">
+            <div class="seg">
+              <button>低</button>
+              <button class="on">中</button>
+              <button>高</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========== API KEYS =========== -->
+      <section class="card" id="api">
+        <header>
+          <span class="num">04</span>
+          <h2>API 密钥 · 经纪商</h2>
+          <div class="desc">所有密钥使用 AES-256-GCM 加密存储 · 仅在执行时解密</div>
+        </header>
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th style="width: 20%;">提供方</th>
+              <th>Key</th>
+              <th>权限</th>
+              <th style="width: 110px;">状态</th>
+              <th style="width: 110px;">最后使用</th>
+              <th style="width: 80px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ven"><span class="vd"></span>Interactive Brokers</span></td>
+              <td><span class="key">XYZ7•••••••••2A4F</span></td>
+              <td><span class="scope">read</span><span class="scope">trade</span></td>
+              <td>✓ 已连接</td>
+              <td>3 分钟前</td>
+              <td><span class="act">复制</span> · <span class="act danger">撤销</span></td>
+            </tr>
+            <tr>
+              <td><span class="ven"><span class="vd"></span>Binance</span></td>
+              <td><span class="key">api1•••••••••E9D2</span></td>
+              <td><span class="scope">read</span><span class="scope">trade</span></td>
+              <td>✓ 已连接</td>
+              <td>12 秒前</td>
+              <td><span class="act">复制</span> · <span class="act danger">撤销</span></td>
+            </tr>
+            <tr>
+              <td><span class="ven"><span class="vd warn"></span>富途 OpenAPI</span></td>
+              <td><span class="key">FUT•••••••••1B8C</span></td>
+              <td><span class="scope">read</span></td>
+              <td style="color: var(--oq-warn);">⚠ 仅行情</td>
+              <td>2 小时前</td>
+              <td><span class="act">复制</span> · <span class="act danger">撤销</span></td>
+            </tr>
+            <tr>
+              <td><span class="ven"><span class="vd"></span>Polygon.io</span></td>
+              <td><span class="key">POL•••••••••3F1A</span></td>
+              <td><span class="scope">data</span></td>
+              <td>✓ 数据流</td>
+              <td>实时</td>
+              <td><span class="act">复制</span> · <span class="act danger">撤销</span></td>
+            </tr>
+            <tr>
+              <td><span class="ven"><span class="vd off"></span>OKX</span></td>
+              <td style="color:var(--oq-ink-40);">未配置</td>
+              <td>—</td>
+              <td style="color: var(--oq-ink-40);">未连接</td>
+              <td style="color: var(--oq-ink-40);">—</td>
+              <td><span class="act" style="color: var(--oq-brand-accent);">+ 添加</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="add-key">+ 接入新经纪商</button>
+      </section>
+
+      <!-- =========== AI =========== -->
+      <section class="card" id="ai">
+        <header>
+          <span class="num">05</span>
+          <h2>AI 助手</h2>
+          <div class="desc">可用于策略生成 · 新闻摘要 · 自然语言查询</div>
+        </header>
+        <div class="row">
+          <div>
+            <div class="lab">默认模型</div>
+            <div class="hint">Haiku 适合实时摘要 · Sonnet 适合复杂策略推理 · 自定义可接入私有 endpoint。</div>
+          </div>
+          <div class="ctl">
+            <select class="select">
+              <option>Claude Haiku 4.5 — 快速 · 默认</option>
+              <option>Claude Sonnet 4.5 — 推理</option>
+              <option>GPT-4.1 Turbo</option>
+              <option>本地 Llama 70B (LAN)</option>
+              <option>自定义 endpoint…</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">自动新闻摘要</div>
+            <div class="hint">每 15 分钟生成一次自选股相关新闻的简报，附带情绪指数。</div>
+          </div>
+          <div class="ctl"><button class="switch on" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">允许 AI 提议下单</div>
+            <div class="hint" style="color: var(--oq-warn);">AI 可生成订单草稿，但 <b>必须经过你二次确认</b>。永不开启 "直接执行"。</div>
+          </div>
+          <div class="ctl"><button class="switch" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lab">每月 token 上限</div>
+            <div class="hint">超出后切换到本地模型或暂停。当前已用 1.42M / 5.0M。</div>
+          </div>
+          <div class="ctl" style="gap: 12px;">
+            <input type="range" min="500" max="20000" step="500" value="5000" style="flex:1; accent-color: var(--oq-brand-accent);"/>
+            <span class="input mono" style="width: 80px; text-align: center; padding: 6px;">5.0 M</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========== USAGE TILES =========== -->
+      <section class="card" id="billing">
+        <header>
+          <span class="num">06</span>
+          <h2>本月用量</h2>
+          <div class="desc">PRO 套餐 · 续订于 2026-05-12</div>
+        </header>
+        <div class="tiles">
+          <div class="tile">
+            <div class="lab">API 调用</div>
+            <div class="v">142,830 <small class="up">+12%</small></div>
+          </div>
+          <div class="tile">
+            <div class="lab">AI Tokens</div>
+            <div class="v">1.42 M <small>/ 5.0 M</small></div>
+          </div>
+          <div class="tile">
+            <div class="lab">策略运行时</div>
+            <div class="v">186 h <small class="up">+24h</small></div>
+          </div>
+          <div class="tile">
+            <div class="lab">回测次数</div>
+            <div class="v">328 <small class="dn">−5</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========== DANGER =========== -->
+      <section class="card" id="danger">
+        <header>
+          <span class="num">07</span>
+          <h2 style="color: var(--oq-down);">危险操作</h2>
+          <div class="desc">这些操作不可撤销 · 请确认</div>
+        </header>
+        <div class="danger-row">
+          <div class="l">
+            <b>导出全部数据</b>
+            <span>包含自选、策略、回测记录、AI 对话历史，约 ~ 248 MB。生成需 5–10 分钟。</span>
+          </div>
+          <button class="btn-ghost" style="border-color: var(--oq-ink-20); color: var(--oq-ink-80);">导出 .zip</button>
+        </div>
+        <div class="danger-row">
+          <div class="l">
+            <b>停用账户</b>
+            <span>登录被禁用，但数据保留 90 天可恢复。订阅自动停止扣费。</span>
+          </div>
+          <button class="btn-ghost">停用</button>
+        </div>
+        <div class="danger-row">
+          <div class="l">
+            <b>永久删除账户</b>
+            <span>所有数据立即删除，包含运行中的策略与未结订单。<u>不可恢复</u>。</span>
+          </div>
+          <button class="btn-ghost">永久删除…</button>
+        </div>
+      </section>
+
+      <!-- =========== STICKY FOOTER =========== -->
+      <div class="footer-actions">
+        <span class="changes">3 项未保存的更改</span>
+        <span class="sp"></span>
+        <button class="btn-sec">还原</button>
+        <button class="btn-prm">保存 <span class="kbd">⌘ S</span></button>
+      </div>
+    </main>
+
+    <!-- ============ ASIDE ============ -->
+    <aside class="aside">
+
+      <div class="preview-wrap">
+        <h5>实时预览 · Watchlist</h5>
+        <div class="preview" id="preview">
+          <div class="pr-row">
+            <b>AAPL</b><span class="px">234.12</span><span class="ch up">+0.84%</span>
+          </div>
+          <div class="pr-row">
+            <b>NVDA</b><span class="px">138.72</span><span class="ch up">+2.15%</span>
+          </div>
+          <div class="pr-row">
+            <b>TSLA</b><span class="px">248.91</span><span class="ch dn">−1.42%</span>
+          </div>
+          <div class="pr-row">
+            <b>BTC</b><span class="px">68,420</span><span class="ch dn">−1.18%</span>
+          </div>
+          <div class="pr-row">
+            <b>00700</b><span class="px">412.60</span><span class="ch up">+0.65%</span>
+          </div>
+        </div>
+        <div class="preview-cap">// 修改外观或配色将立即在此预览</div>
+      </div>
+
+      <div class="info-box">
+        <b>— 提示</b>
+        所有 API 密钥使用 AES-256-GCM 加密存储，主密钥来自你的 2FA TOTP 派生 —— 即便我们的数据库被脱库，密钥仍不可读。
+      </div>
+
+      <h5>最近活动</h5>
+      <div class="audit">
+        <div class="ev">
+          <span class="t">14:23</span>
+          <span class="d">修改了 <em>外观主题</em> · 纸色</span>
+        </div>
+        <div class="ev">
+          <span class="t">14:21</span>
+          <span class="d">添加 API 密钥 · <em>Polygon.io</em></span>
+        </div>
+        <div class="ev">
+          <span class="t">13:48</span>
+          <span class="d">从 macOS · Safari 登录 · <em class="warn">新设备</em></span>
+        </div>
+        <div class="ev">
+          <span class="t">12:02</span>
+          <span class="d">2FA 验证通过</span>
+        </div>
+        <div class="ev">
+          <span class="t">昨日</span>
+          <span class="d">撤销了 <em class="warn">OKX</em> 的 trade 权限</span>
+        </div>
+        <div class="ev">
+          <span class="t">昨日</span>
+          <span class="d">导出报表 · 2026-Q1.pdf</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// Sidebar nav: highlight on click + scroll
+document.querySelectorAll('.side a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    document.querySelectorAll('.side a').forEach(x => x.classList.remove('cur'));
+    a.classList.add('cur');
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView ? null : null; // avoid scrollIntoView
+      const c = document.querySelector('.content');
+      const top = target.offsetTop - 24;
+      c.scrollTo({ top, behavior: 'smooth' });
+    }
+  });
+});
+
+// Segmented toggles within content (cosmetic)
+document.querySelectorAll('.content .seg').forEach(seg => {
+  seg.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      seg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+});
+
+// Color combo
+document.querySelectorAll('.combo .px').forEach(px => {
+  px.addEventListener('click', () => {
+    document.querySelectorAll('.combo .px').forEach(x => {
+      x.classList.remove('on');
+      x.style.borderColor = 'transparent';
+    });
+    px.classList.add('on');
+    px.style.borderColor = 'var(--oq-ink-90)';
+  });
+});
+
+// Theme swatches: actually flip data-theme
+document.querySelectorAll('.swatches .sw').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.swatches .sw').forEach(x => x.classList.remove('on'));
+    sw.classList.add('on');
+    if (sw.classList.contains('sw-night')) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+  });
+});
+
+// Live preview tick — re-flash one row every ~2s
+setInterval(() => {
+  const rows = document.querySelectorAll('#preview .pr-row');
+  const r = rows[Math.floor(Math.random() * rows.length)];
+  const dir = Math.random() < 0.5 ? 'up' : 'down';
+  r.style.animation = 'none'; void r.offsetWidth;
+  r.style.animation = `oq-tick-${dir} 0.7s var(--oq-ease-out)`;
+}, 2200);
+</script>
+</body>
+</html>

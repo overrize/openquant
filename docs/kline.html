@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>OpenQuant · K线详情 · NVDA</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  .shell { display: grid; grid-template-rows: 48px 1fr; height: 100vh; }
+  header.top { display:flex; align-items:center; gap: 16px; padding: 0 20px; border-bottom: 1px solid var(--oq-ink-20); background: var(--oq-ink-05);}
+  .back { font-family: var(--oq-font-mono); font-size: 12px; color: var(--oq-ink-60); text-decoration: none; padding: 4px 10px; border-radius: 6px; }
+  .back:hover { background: var(--oq-ink-10); color: var(--oq-ink-90);}
+  .crumb { font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-40); letter-spacing: 0.08em; }
+  .head-sym { margin-left: auto; display:flex; gap: 10px; align-items: baseline; }
+  .head-sym .s { font-family: var(--oq-font-display); font-size: 18px; font-weight: 600; color: var(--oq-ink-90);}
+  .head-sym .n { font-size: 12px; color: var(--oq-ink-60);}
+
+  main { display: grid; grid-template-columns: 280px 1fr 320px; gap: 12px; padding: 12px; overflow: hidden;}
+  .panel { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-lg); overflow: hidden; display:flex; flex-direction:column;}
+  .ph { padding: 12px 16px; border-bottom: 1px solid var(--oq-ink-15); font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--oq-ink-60); font-weight: 600;}
+  .pb { flex: 1; overflow: auto; padding: 14px 16px;}
+
+  /* Left: quote + stats */
+  .qt-price { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 600; color: var(--oq-ink-90); letter-spacing: -0.02em; line-height: 1.1;}
+  .qt-delta { display:flex; gap: 10px; font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 15px; margin-top: 6px; }
+  .qt-pill { padding: 3px 10px; background: var(--oq-up); color: white; border-radius: 4px; font-weight: 600;}
+  .qt-meta { margin-top: 4px; font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-60);}
+
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; margin-top: 20px; font-size: 12px; }
+  .kv dt { color: var(--oq-ink-60);}
+  .kv dd { margin: 0; font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; color: var(--oq-ink-90); text-align: right; font-weight: 500;}
+
+  .order-box { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--oq-ink-20);}
+  .seg2 { display:flex; border: 1px solid var(--oq-ink-20); border-radius: 6px; overflow: hidden; margin-bottom: 10px;}
+  .seg2 button { flex: 1; padding: 7px; border: none; background: transparent; font-size: 12px; cursor: pointer; color: var(--oq-ink-60); font-family: var(--oq-font-sans);}
+  .seg2 button.buy.on { background: var(--oq-up); color: white;}
+  .seg2 button.sell.on { background: var(--oq-down); color: white;}
+  .f-row { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; font-size: 12px;}
+  .f-row label { font-size: 11px; color: var(--oq-ink-60); display:block; margin-bottom: 3px;}
+  .f-row input { width: 100%; padding: 6px 10px; border: 1px solid var(--oq-ink-20); border-radius: 6px; font-family: var(--oq-font-mono); font-size: 13px; background: var(--oq-ink-05); color: var(--oq-ink-80); font-variant-numeric: tabular-nums;}
+  .btn-order { width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--oq-up); color: white; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 6px;}
+
+  /* Center chart */
+  .chart-top { display:flex; gap: 4px; padding: 10px 14px; border-bottom: 1px solid var(--oq-ink-15); align-items: center; justify-content: space-between;}
+  .tf { display:flex; gap:2px; }
+  .tf button { padding: 4px 10px; border: none; border-radius: 4px; background: transparent; font-size: 11px; color: var(--oq-ink-60); cursor: pointer; font-family: var(--oq-font-mono);}
+  .tf button.on { background: var(--oq-ink-10); color: var(--oq-ink-90);}
+  .chart-tools { display:flex; gap: 4px; }
+  .chart-tools button { padding: 4px 8px; border: 1px solid var(--oq-ink-20); border-radius: 4px; background: transparent; font-size: 11px; color: var(--oq-ink-60); cursor: pointer; font-family: var(--oq-font-sans);}
+  .chart-area { flex: 1; display: grid; grid-template-rows: 1fr 100px; min-height: 0;}
+  .chart-svg-wrap { padding: 10px; border-bottom: 1px dashed var(--oq-ink-15); }
+  .vol-wrap { padding: 10px;}
+
+  /* Right: news + signals */
+  .mini-news { padding: 10px 14px; border-bottom: 1px dashed var(--oq-ink-15); cursor: pointer;}
+  .mini-news:hover { background: var(--oq-ink-05);}
+  .mini-news .m { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60); margin-bottom: 4px;}
+  .mini-news h5 { font-family: var(--oq-font-display); margin: 0 0 4px; font-size: 13px; color: var(--oq-ink-90); font-weight: 600; line-height: 1.4;}
+  .mini-news p { margin: 0; font-size: 11.5px; color: var(--oq-ink-60); line-height: 1.5;}
+
+  .factor-row { display:flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--oq-ink-15); font-size: 12px;}
+  .factor-row:last-child { border: none;}
+  .factor-row .name { color: var(--oq-ink-80);}
+  .factor-row .bar { width: 60px; height: 5px; background: var(--oq-ink-15); border-radius: 2px; overflow: hidden; position: relative;}
+  .factor-row .bar-fill { height: 100%; border-radius: 2px;}
+  .factor-row .val { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; width: 40px; text-align: right;}
+
+  .sub-tabs { display: flex; gap: 2px; padding: 8px 14px; border-bottom: 1px solid var(--oq-ink-15);}
+  .sub-tabs button { padding: 4px 10px; border: none; background: transparent; font-size: 12px; color: var(--oq-ink-60); cursor: pointer; border-radius: 4px; font-family: var(--oq-font-sans);}
+  .sub-tabs button.on { background: var(--oq-ink-10); color: var(--oq-ink-90);}
+
+  .orderbook { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 12px;}
+  .ob-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 4px 12px; position: relative; overflow: hidden;}
+  .ob-row .fill { position: absolute; top:0; bottom:0; right: 0; z-index: 0;}
+  .ob-row.ask .fill { background: var(--oq-down-bg); }
+  .ob-row.bid .fill { background: var(--oq-up-bg);}
+  .ob-row span { position: relative; z-index: 1;}
+  .ob-row .px { color: var(--oq-ink-90); font-weight: 600;}
+  .ob-row.ask .px { color: var(--oq-down-fg);}
+  .ob-row.bid .px { color: var(--oq-up-fg);}
+  .ob-row .sz { color: var(--oq-ink-60); text-align:right;}
+  .ob-row .total { color: var(--oq-ink-40); text-align:right;}
+  .ob-spread { padding: 6px 12px; background: var(--oq-ink-10); font-size: 11px; color: var(--oq-ink-60); display: flex; justify-content: space-between;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <a class="back" href="dashboard.html">← 返回</a>
+    <span class="crumb">MARKETS / US / EQUITY</span>
+    <div class="head-sym">
+      <span class="s">NVDA</span>
+      <span class="n">NVIDIA · NASDAQ · USD</span>
+    </div>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="ph">报价 · Quote</div>
+      <div class="pb">
+        <div class="qt-price oq-mono">892.55</div>
+        <div class="qt-delta">
+          <span style="color: var(--oq-up-fg);">+27.21</span>
+          <span class="qt-pill">+3.14%</span>
+        </div>
+        <div class="qt-meta">14:32:05 · 实时 Finnhub</div>
+
+        <dl class="kv">
+          <dt>开盘</dt><dd>868.44</dd>
+          <dt>最高</dt><dd>896.22</dd>
+          <dt>最低</dt><dd>865.30</dd>
+          <dt>昨收</dt><dd>865.34</dd>
+          <dt>成交量</dt><dd>5.42亿</dd>
+          <dt>成交额</dt><dd>$482.1亿</dd>
+          <dt>换手率</dt><dd>1.82%</dd>
+          <dt>市值</dt><dd>$2.21万亿</dd>
+          <dt>市盈率</dt><dd>62.4</dd>
+          <dt>52周高</dt><dd>974.00</dd>
+          <dt>52周低</dt><dd>422.75</dd>
+        </dl>
+
+        <div class="order-box">
+          <div style="font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--oq-ink-60); margin-bottom: 10px;">模拟下单 · PAPER</div>
+          <div class="seg2">
+            <button class="buy on">买入</button>
+            <button class="sell">卖出</button>
+          </div>
+          <div class="f-row">
+            <div><label>价格</label><input value="892.55"/></div>
+            <div><label>数量</label><input value="100"/></div>
+          </div>
+          <div class="f-row" style="grid-template-columns: 1fr;">
+            <div><label>类型</label><input value="限价 · GTC" readonly/></div>
+          </div>
+          <div style="font-size: 11px; color: var(--oq-ink-60); margin: 8px 0; display:flex; justify-content: space-between;">
+            <span>预估金额</span><span class="oq-mono" style="color: var(--oq-ink-90); font-weight: 600;">$89,255.00</span>
+          </div>
+          <button class="btn-order">买入 100 股</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="chart-top">
+        <div class="tf">
+          <button>1m</button><button>5m</button><button class="on">15m</button><button>1h</button><button>4h</button><button>1D</button><button>1W</button><button>1M</button>
+        </div>
+        <div class="chart-tools">
+          <button>MA</button><button>BOLL</button><button>MACD</button><button>RSI</button><button>画线</button>
+        </div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-svg-wrap">
+          <svg id="mainChart" viewBox="0 0 900 360" preserveAspectRatio="none" width="100%" height="100%"></svg>
+        </div>
+        <div class="vol-wrap">
+          <div style="font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60); margin-bottom: 4px;">VOLUME · MACD(12,26,9)</div>
+          <svg id="volChart" viewBox="0 0 900 80" preserveAspectRatio="none" width="100%" height="80"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="sub-tabs">
+        <button class="on">盘口</button>
+        <button>相关新闻</button>
+        <button>因子</button>
+      </div>
+      <div class="ph" style="border: none; padding: 10px 14px 4px;">五档盘口 · L2</div>
+      <div class="orderbook">
+        <div class="ob-row ask"><div class="fill" style="width: 45%;"></div><span class="px">893.20</span><span class="sz">1,240</span><span class="total">6,842</span></div>
+        <div class="ob-row ask"><div class="fill" style="width: 32%;"></div><span class="px">893.00</span><span class="sz">876</span><span class="total">5,602</span></div>
+        <div class="ob-row ask"><div class="fill" style="width: 68%;"></div><span class="px">892.80</span><span class="sz">2,145</span><span class="total">4,726</span></div>
+        <div class="ob-row ask"><div class="fill" style="width: 22%;"></div><span class="px">892.70</span><span class="sz">612</span><span class="total">2,581</span></div>
+        <div class="ob-row ask"><div class="fill" style="width: 80%;"></div><span class="px">892.60</span><span class="sz">1,969</span><span class="total">1,969</span></div>
+        <div class="ob-spread"><span>价差 0.05</span><span style="color: var(--oq-up-fg); font-weight:600;">最新 892.55 ↑</span><span>Mid 892.575</span></div>
+        <div class="ob-row bid"><div class="fill" style="width: 90%;"></div><span class="px">892.55</span><span class="sz">2,442</span><span class="total">2,442</span></div>
+        <div class="ob-row bid"><div class="fill" style="width: 40%;"></div><span class="px">892.40</span><span class="sz">1,106</span><span class="total">3,548</span></div>
+        <div class="ob-row bid"><div class="fill" style="width: 55%;"></div><span class="px">892.20</span><span class="sz">1,502</span><span class="total">5,050</span></div>
+        <div class="ob-row bid"><div class="fill" style="width: 28%;"></div><span class="px">892.00</span><span class="sz">788</span><span class="total">5,838</span></div>
+        <div class="ob-row bid"><div class="fill" style="width: 62%;"></div><span class="px">891.80</span><span class="sz">1,668</span><span class="total">7,506</span></div>
+      </div>
+
+      <div class="ph" style="border-top: 1px solid var(--oq-ink-15); border-bottom: none; padding: 14px 14px 4px;">因子评分</div>
+      <div style="padding: 0 14px 14px;">
+        <div class="factor-row"><span class="name">动量 Momentum</span><div class="bar"><div class="bar-fill" style="width: 82%; background: var(--oq-up);"></div></div><span class="val" style="color: var(--oq-up-fg);">+0.82</span></div>
+        <div class="factor-row"><span class="name">波动率 Vol</span><div class="bar"><div class="bar-fill" style="width: 64%; background: var(--oq-warn);"></div></div><span class="val" style="color: var(--oq-warn);">0.64</span></div>
+        <div class="factor-row"><span class="name">资金流 Flow</span><div class="bar"><div class="bar-fill" style="width: 71%; background: var(--oq-up);"></div></div><span class="val" style="color: var(--oq-up-fg);">+0.71</span></div>
+        <div class="factor-row"><span class="name">情绪 Sentiment</span><div class="bar"><div class="bar-fill" style="width: 58%; background: var(--oq-up);"></div></div><span class="val" style="color: var(--oq-up-fg);">+0.58</span></div>
+        <div class="factor-row"><span class="name">估值 Value</span><div class="bar"><div class="bar-fill" style="width: 28%; background: var(--oq-down);"></div></div><span class="val" style="color: var(--oq-down-fg);">-0.43</span></div>
+      </div>
+
+      <div class="ph" style="border-top: 1px solid var(--oq-ink-15); border-bottom: none; padding: 14px 14px 4px;">相关新闻</div>
+      <div class="mini-news">
+        <div class="m">13:48 · 彭博</div>
+        <h5>Blackwell 订单超预期，Q3 指引上调</h5>
+        <p>四大云厂商合计下单达历史高位 · AI 芯片景气延续。</p>
+      </div>
+      <div class="mini-news">
+        <div class="m">11:20 · Reuters</div>
+        <h5>台积电 CoWoS 扩产 40%</h5>
+        <p>英伟达供应链瓶颈有望缓解，上游 ASML 同步受益。</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function() {
+  // Main candle chart
+  const svg = document.getElementById('mainChart');
+  const W = 900, H = 360, N = 60;
+  let close = 830;
+  const candles = [];
+  for (let i = 0; i < N; i++) {
+    const o = close;
+    const ch = (Math.random() - 0.4) * 12;
+    close = Math.max(800, Math.min(930, o + ch));
+    const h = Math.max(o, close) + Math.random() * 4;
+    const l = Math.min(o, close) - Math.random() * 4;
+    candles.push({ o, h, l, c: close, v: 0.4 + Math.random() * 0.8 });
+  }
+  candles[N-1].c = 892.55;
+  const allH = candles.map(c => c.h), allL = candles.map(c => c.l);
+  const min = Math.min(...allL), max = Math.max(...allH);
+  const r = max - min;
+  const cw = W / N * 0.7;
+  const step = W / N;
+
+  let grid = '';
+  for (let i = 1; i < 6; i++) {
+    const y = i * H / 6;
+    grid += `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="var(--oq-ink-15)" stroke-dasharray="2,3"/>`;
+    const px = (max - (i * r / 6)).toFixed(0);
+    grid += `<text x="${W-4}" y="${y-3}" text-anchor="end" font-family="SF Mono,monospace" font-size="9" fill="var(--oq-ink-40)">${px}</text>`;
+  }
+
+  // MA line
+  const maPts = [];
+  for (let i = 0; i < N; i++) {
+    const s = Math.max(0, i - 5);
+    const slice = candles.slice(s, i+1);
+    const avg = slice.reduce((a,x) => a + x.c, 0) / slice.length;
+    const y = H - ((avg - min) / r) * H;
+    maPts.push(`${i * step + step/2},${y}`);
+  }
+
+  let ck = '';
+  candles.forEach((c, i) => {
+    const x = i * step + step/2;
+    const yH = H - ((c.h - min) / r) * H;
+    const yL = H - ((c.l - min) / r) * H;
+    const yO = H - ((c.o - min) / r) * H;
+    const yC = H - ((c.c - min) / r) * H;
+    const up = c.c >= c.o;
+    const color = up ? '#0D7A6B' : '#B83565';
+    ck += `<line x1="${x}" x2="${x}" y1="${yH}" y2="${yL}" stroke="${color}" stroke-width="1"/>`;
+    ck += `<rect x="${x - cw/2}" y="${Math.min(yO, yC)}" width="${cw}" height="${Math.max(1, Math.abs(yC - yO))}" fill="${up ? 'white' : color}" stroke="${color}" stroke-width="1"/>`;
+  });
+
+  svg.innerHTML = `
+    ${grid}
+    <polyline fill="none" stroke="#b8742b" stroke-width="1" stroke-dasharray="3,2" points="${maPts.join(' ')}"/>
+    ${ck}
+    <line x1="0" x2="${W}" y1="${H - ((892.55 - min) / r) * H}" y2="${H - ((892.55 - min) / r) * H}" stroke="#0D7A6B" stroke-dasharray="2,2" stroke-width="1"/>
+  `;
+
+  // Volume bars
+  const vsvg = document.getElementById('volChart');
+  const VH = 80;
+  let vb = '';
+  candles.forEach((c, i) => {
+    const x = i * step + step/2;
+    const up = c.c >= c.o;
+    const color = up ? 'rgba(13,122,107,0.5)' : 'rgba(184,53,101,0.5)';
+    vb += `<rect x="${x - cw/2}" y="${VH - c.v * VH * 0.8}" width="${cw}" height="${c.v * VH * 0.8}" fill="${color}"/>`;
+  });
+  vsvg.innerHTML = vb;
+})();
+</script>
+</body>
+</html>

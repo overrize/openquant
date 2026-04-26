@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>OpenQuant · 概览</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<style>
+  body { background: var(--oq-ink-05); min-height: 100vh; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 64px 32px; }
+  .hero { margin-bottom: 56px; }
+  .eyebrow { font-family: var(--oq-font-mono); font-size: 11px; letter-spacing: 0.2em; color: var(--oq-ink-60); text-transform: uppercase; }
+  h1 { font-family: var(--oq-font-display); font-size: 56px; line-height: 1.05; letter-spacing: -0.02em; color: var(--oq-ink-90); margin: 8px 0 20px; font-weight: 600; max-width: 820px; text-wrap: balance;}
+  .lede { font-size: 17px; line-height: 1.6; color: var(--oq-ink-60); max-width: 640px; }
+  .crit {
+    margin-top: 32px; padding: 20px 24px; background: var(--oq-ink-10); border-radius: var(--oq-r-lg);
+    border-left: 3px solid var(--oq-brand-accent); max-width: 680px;
+  }
+  .crit h3 { font-family: var(--oq-font-display); font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 10px; color: var(--oq-ink-60);}
+  .crit ul { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.75; color: var(--oq-ink-80); }
+  .crit ul li::marker { color: var(--oq-down); }
+
+  .links { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 900px) { .links { grid-template-columns: 1fr; } }
+  .link-card {
+    display: block; padding: 20px 22px; background: var(--oq-ink-0);
+    border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-lg);
+    color: var(--oq-ink-80); text-decoration: none;
+    transition: border-color 160ms, transform 160ms;
+  }
+  .link-card:hover { border-color: var(--oq-ink-40); transform: translateY(-2px); box-shadow: var(--oq-shadow-md);}
+  .link-card .tag { font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-brand-accent); letter-spacing: 0.1em; font-weight: 600;}
+  .link-card h2 { font-family: var(--oq-font-display); font-size: 22px; margin: 4px 0 8px; color: var(--oq-ink-90); font-weight: 600;}
+  .link-card p { font-size: 12.5px; color: var(--oq-ink-60); margin: 0; line-height: 1.55;}
+  .link-card .arrow { float: right; color: var(--oq-ink-40); font-family: var(--oq-font-mono);}
+
+  .principles {
+    margin-top: 64px; padding: 32px; background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-lg);
+  }
+  .principles h3 { margin: 0 0 18px; font-family: var(--oq-font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--oq-ink-60); font-weight: 600;}
+  .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .p-grid div { font-size: 13px; line-height: 1.6; color: var(--oq-ink-80);}
+  .p-grid div b { display: block; font-family: var(--oq-font-display); font-size: 16px; color: var(--oq-ink-90); margin-bottom: 4px; font-weight: 600;}
+
+  .footer { margin-top: 48px; color: var(--oq-ink-40); font-size: 12px; font-family: var(--oq-font-mono);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">OPENQUANT · REDESIGN · v2.0</div>
+    <h1>为盯盘设计，而不是为 Demo 设计。</h1>
+    <p class="lede">这是 OpenQuant 的重新设计——纸色底、青涨品红跌、衬线大标题、网格化 dashboard、⌘K 呼出菜单、AI 量化助手、新闻自动摘要。目标是让你多看两小时眼睛不痛。</p>
+
+    <div class="crit">
+      <h3>— 针对现有界面的批评</h3>
+      <ul>
+        <li>过度的深色与高饱和紫色，AI 感强、长时间盯盘疲劳</li>
+        <li>顶部横向 tab 挤压视觉且切换成本高</li>
+        <li>表格信息密度低，缺少热力/趋势/新闻联动</li>
+        <li>没有 AI 助手和财经新闻窗口</li>
+        <li>数字处理普通，缺少 tick 动画与涨跌强度表达</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="links">
+    <a class="link-card" href="design-system.html">
+      <span class="arrow">↗</span>
+      <div class="tag">01 · FOUNDATION</div>
+      <h2>Design System</h2>
+      <p>颜色 · 字体 · 按钮 · 报价行 · 新闻 · 圆角 · 阴影 · 导航 · 六条原则。双主题可切。</p>
+    </a>
+    <a class="link-card" href="dashboard.html">
+      <span class="arrow">↗</span>
+      <div class="tag">02 · PROTOTYPE</div>
+      <h2>盯盘主界面</h2>
+      <p>网格化 dashboard · 实时 tick 动画 · ⌘K 呼出菜单 · AI 助手 · 新闻摘要。<br/>Tweaks 中可切换 3 种布局变体 + 深浅主题。</p>
+    </a>
+    <a class="link-card" href="kline.html">
+      <span class="arrow">↗</span>
+      <div class="tag">03 · DETAIL</div>
+      <h2>K 线 / 个股详情</h2>
+      <p>多周期切换 · 技术指标叠加 · 资金流 · 财报 · 新闻 · AI 解读。一屏读懂一只标的。</p>
+    </a>
+    <a class="link-card" href="agents.html">
+      <span class="arrow">↗</span>
+      <div class="tag">04 · ALPHA</div>
+      <h2>Agents & 策略</h2>
+      <p>AI Agent 配置 · 策略库 · 回测引擎 · 实盘部署。从想法到上线全链路。</p>
+    </a>
+    <a class="link-card" href="learn.html">
+      <span class="arrow">↗</span>
+      <div class="tag">05 · LEARN</div>
+      <h2>学习中心</h2>
+      <p>量化课程（B 站直链）· 经典书籍（豆瓣直链）· 从 Python 入门到 ML 量化。</p>
+    </a>
+    <a class="link-card" href="mobile.html">
+      <span class="arrow">↗</span>
+      <div class="tag">06 · MOBILE</div>
+      <h2>移动端</h2>
+      <p>iOS 端 · 下拉刷新 · 双指缩放 K 线 · Push 推送 · 通勤路上也能盯盘。</p>
+    </a>
+    <a class="link-card" href="login.html">
+      <span class="arrow">↗</span>
+      <div class="tag">07 · ENTRY</div>
+      <h2>登录</h2>
+      <p>双栏布局 · 实时报价滚动陪衬 · 邮箱 / 手机 / OAuth · 2FA 已启用。</p>
+    </a>
+    <a class="link-card" href="settings.html">
+      <span class="arrow">↗</span>
+      <div class="tag">08 · CONFIG</div>
+      <h2>设置 · 账户</h2>
+      <p>外观 / 配色 / API 密钥 / AI 模型 / 用量 / 危险操作 —— 三栏带实时预览。</p>
+    </a>
+  </div>
+
+  <div class="principles">
+    <h3>— 六条设计原则</h3>
+    <div class="p-grid">
+      <div><b>熵减</b>每多一个元素都要为信息增益负责。去掉装饰性渐变和冗余 badge。</div>
+      <div><b>克制</b>颜色只在涨跌、警告、当前选择时出现。其余一律中性。</div>
+      <div><b>等宽对齐</b>所有数字 tabular-nums + SF Mono，跳动时不撑行、不错位。</div>
+      <div><b>动画即信号</b>只有有意义的变化才动——tick 闪烁、大涨放大、通知滑入。</div>
+      <div><b>不预设情绪</b>避开视网膜刺激色。青/品红让用户自己判断，不煽动交易。</div>
+      <div><b>纸与屏</b>纸色底 + 衬线大标题。像读一份早报，而不是赌场屏幕。</div>
+    </div>
+  </div>
+
+  <div class="footer">OpenQuant v2.0 · 作为重新设计的起点 · 2026</div>
+</div>
+</body>
+</html>

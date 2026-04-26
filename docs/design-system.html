@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>OpenQuant · Design System</title>
+<link rel="stylesheet" href="assets/tokens.css" />
+<style>
+  body { background: var(--oq-ink-05); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 32px 96px; }
+
+  .ds-h { font-family: var(--oq-font-display); font-size: 40px; letter-spacing:-0.02em; color: var(--oq-ink-90); margin: 0 0 8px; font-weight: 600;}
+  .ds-sub { color: var(--oq-ink-60); font-size: 14px; max-width: 680px; margin: 0 0 48px; }
+
+  .section { margin-bottom: 56px; }
+  .section-title {
+    font-family: var(--oq-font-display); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--oq-ink-60); margin: 0 0 20px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--oq-ink-20);
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .section-title .idx { font-family: var(--oq-font-mono); color: var(--oq-ink-40); }
+
+  .grid { display: grid; gap: 16px; }
+  .g-2 { grid-template-columns: repeat(2, 1fr); }
+  .g-3 { grid-template-columns: repeat(3, 1fr); }
+  .g-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20);
+    border-radius: var(--oq-r-lg); padding: 20px;
+  }
+
+  /* Swatches */
+  .swatch { border-radius: var(--oq-r-md); padding: 14px; height: 96px; display:flex; flex-direction:column; justify-content: space-between;
+    border: 1px solid rgba(43,40,32,0.06); }
+  .swatch .name { font-size: 11px; opacity: 0.7; font-family: var(--oq-font-mono); }
+  .swatch .val { font-size: 12px; font-family: var(--oq-font-mono); font-weight: 600;}
+
+  /* Type specimens */
+  .type-row { display: flex; align-items: baseline; gap: 24px; padding: 16px 0; border-bottom: 1px dashed var(--oq-ink-20); }
+  .type-meta { width: 180px; font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-60); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: var(--oq-r-md); font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 1px solid transparent; background: transparent; color: var(--oq-ink-80);
+    transition: all 120ms var(--oq-ease-out);
+    font-family: var(--oq-font-sans);
+  }
+  .btn-primary { background: var(--oq-ink-90); color: var(--oq-ink-05); }
+  .btn-primary:hover { background: var(--oq-ink-95); }
+  .btn-secondary { background: var(--oq-ink-0); border-color: var(--oq-ink-30); }
+  .btn-secondary:hover { border-color: var(--oq-ink-40); }
+  .btn-ghost:hover { background: var(--oq-ink-10); }
+  .btn-accent { background: var(--oq-up); color: white; }
+
+  /* Ticker row */
+  .tick-row { display: grid; grid-template-columns: 1fr 120px 100px 80px 40px; align-items: center;
+    padding: 10px 14px; border-radius: var(--oq-r-md); border: 1px solid var(--oq-ink-15); margin-bottom: 6px; }
+  .tick-row .sym { font-weight: 600; font-size: 13px; color: var(--oq-ink-90); }
+  .tick-row .nm { font-size: 11px; color: var(--oq-ink-60); margin-left: 8px; }
+  .tick-row .price { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; font-size: 14px; color: var(--oq-ink-90); }
+  .tick-row .pct { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; text-align: right; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 600;}
+  .up { color: var(--oq-up-fg); background: var(--oq-up-bg); }
+  .down { color: var(--oq-down-fg); background: var(--oq-down-bg); }
+  .up-strong { color: white; background: var(--oq-up); }
+  .down-strong { color: white; background: var(--oq-down); }
+
+  /* News card */
+  .news-card { border-left: 2px solid var(--oq-ink-30); padding: 14px 16px; background: var(--oq-ink-0); border-radius: 0 var(--oq-r-md) var(--oq-r-md) 0; }
+  .news-card .meta { display:flex; gap: 10px; font-size: 11px; color: var(--oq-ink-60); font-family: var(--oq-font-mono); margin-bottom: 8px;}
+  .news-card .tag { padding: 1px 7px; border-radius: 3px; background: var(--oq-ink-10); color: var(--oq-ink-80); }
+  .news-card h4 { font-family: var(--oq-font-display); font-size: 17px; line-height: 1.35; color: var(--oq-ink-90); margin: 0 0 8px; font-weight: 600; text-wrap: pretty; }
+  .ai-bubble {
+    margin-top: 10px; padding: 10px 12px; background: var(--oq-ink-10); border-radius: var(--oq-r-md);
+    font-size: 12px; color: var(--oq-ink-80); position: relative; line-height: 1.55;
+  }
+  .ai-bubble::before {
+    content: "AI"; position: absolute; top: -8px; left: 12px;
+    font-size: 9px; letter-spacing: 0.12em; background: var(--oq-brand-accent); color: white;
+    padding: 2px 6px; border-radius: 3px; font-family: var(--oq-font-mono); font-weight: 600;
+  }
+
+  /* Heatmap scale */
+  .heat { display:flex; gap: 2px; }
+  .heat div { height: 28px; flex: 1; display:flex; align-items:center; justify-content:center; font-family: var(--oq-font-mono); font-size: 10px; font-weight: 600;}
+
+  /* Sparkline */
+  .spark { height: 24px; display: block; }
+
+  /* Table chrome demo */
+  table.demo { width: 100%; border-collapse: collapse; }
+  table.demo th { text-align: left; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--oq-ink-60); padding: 8px 10px; border-bottom: 1px solid var(--oq-ink-20); font-weight: 600;}
+  table.demo td { padding: 10px; border-bottom: 1px solid var(--oq-ink-15); font-size: 13px; }
+
+  /* Input */
+  .input { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-30); border-radius: var(--oq-r-md); padding: 8px 12px; font-size: 13px; width: 100%; font-family: var(--oq-font-sans); color: var(--oq-ink-80);}
+  .input:focus { border-color: var(--oq-up); outline: none; box-shadow: var(--oq-shadow-focus); }
+
+  /* Radii specimens */
+  .radius-demo { height: 56px; background: var(--oq-ink-90); display:flex; align-items:center; justify-content:center; color: var(--oq-ink-05); font-family: var(--oq-font-mono); font-size: 11px;}
+
+  .shadow-demo { background: var(--oq-ink-0); border-radius: var(--oq-r-lg); height: 96px; display:flex; align-items:center; justify-content:center; font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-60);}
+
+  .kbd { display:inline-block; padding: 1px 6px; background: var(--oq-ink-10); border: 1px solid var(--oq-ink-20); border-bottom-width: 2px; border-radius: 4px; font-family: var(--oq-font-mono); font-size: 11px; color: var(--oq-ink-80); }
+
+  .digit { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 8px 14px; border-radius: 999px; background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); font-size: 12px; cursor: pointer; color: var(--oq-ink-80); box-shadow: var(--oq-shadow-sm); z-index: 10;}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeBtn">◐ 切换 深色/浅色</button>
+
+<div class="wrap">
+  <div class="oq-mono" style="font-size: 11px; color: var(--oq-ink-60); letter-spacing: 0.18em;">OPENQUANT · DESIGN SYSTEM · v1.0</div>
+  <h1 class="ds-h">为量化盯盘而设计的视觉系统</h1>
+  <p class="ds-sub">这是 OpenQuant 的设计语言——纸质触感的中性色、克制的版面节奏、以青色/品红替代传统红绿的涨跌色。目标是：长时间盯盘不疲劳、数字可读、科技感克制且友好、信息熵降到最低。</p>
+
+  <!-- Colors -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">01</span>颜色 · Color</h2>
+
+    <div style="font-size: 13px; color: var(--oq-ink-60); margin-bottom: 14px;">中性色：温暖的纸色，而非冷灰。所有界面以 <code class="oq-mono">ink-05</code> 为底。</div>
+    <div class="grid g-4" style="margin-bottom: 24px;">
+      <div class="swatch" style="background: var(--oq-ink-0);   color: var(--oq-ink-80);"><span class="name">ink-0</span><span class="val">#FFFFFF</span></div>
+      <div class="swatch" style="background: var(--oq-ink-05);  color: var(--oq-ink-80);"><span class="name">ink-05 · 底</span><span class="val">#FAFAF7</span></div>
+      <div class="swatch" style="background: var(--oq-ink-10);  color: var(--oq-ink-80);"><span class="name">ink-10 · 面板</span><span class="val">#F4F3EE</span></div>
+      <div class="swatch" style="background: var(--oq-ink-15);  color: var(--oq-ink-80);"><span class="name">ink-15</span><span class="val">#EBE9E1</span></div>
+      <div class="swatch" style="background: var(--oq-ink-20);  color: var(--oq-ink-80);"><span class="name">ink-20 · 分隔</span><span class="val">#DDD9CC</span></div>
+      <div class="swatch" style="background: var(--oq-ink-40);  color: white;"><span class="name">ink-40 · 弱文</span><span class="val">#9A9481</span></div>
+      <div class="swatch" style="background: var(--oq-ink-60);  color: white;"><span class="name">ink-60</span><span class="val">#605A4A</span></div>
+      <div class="swatch" style="background: var(--oq-ink-90);  color: white;"><span class="name">ink-90 · 标题</span><span class="val">#1A1812</span></div>
+    </div>
+
+    <div style="font-size: 13px; color: var(--oq-ink-60); margin-bottom: 14px;"><b>涨跌色</b>：舍弃刺眼的红绿对冲（色盲不友好），使用深青 #0D7A6B × 品红 #B83565——视觉张力对等，但更有距离感，不渲染情绪。</div>
+    <div class="grid g-4" style="margin-bottom: 16px;">
+      <div class="swatch" style="background: var(--oq-up);     color: white;"><span class="name">up · 涨</span><span class="val">#0D7A6B</span></div>
+      <div class="swatch" style="background: var(--oq-up-bg);  color: var(--oq-up-fg);"><span class="name">up-bg · 弱涨</span><span class="val">#D9EFE9</span></div>
+      <div class="swatch" style="background: var(--oq-down);   color: white;"><span class="name">down · 跌</span><span class="val">#B83565</span></div>
+      <div class="swatch" style="background: var(--oq-down-bg); color: var(--oq-down-fg);"><span class="name">down-bg · 弱跌</span><span class="val">#F5DEE7</span></div>
+    </div>
+
+    <div style="font-size: 13px; color: var(--oq-ink-60); margin-bottom: 8px;"><b>热力梯度</b>：数字背景随涨跌强度渐变——一眼识别出"大涨大跌"，不需要看具体百分比。</div>
+    <div class="card" style="padding: 14px;">
+      <div class="heat" style="margin-bottom: 8px;">
+        <div style="background: var(--oq-down); color: white;">≤ -5%</div>
+        <div style="background: var(--oq-down-bg-3); color: var(--oq-down-fg);">-3%</div>
+        <div style="background: var(--oq-down-bg-2); color: var(--oq-down-fg);">-1%</div>
+        <div style="background: var(--oq-down-bg); color: var(--oq-down-fg);">-0.3%</div>
+        <div style="background: var(--oq-ink-10); color: var(--oq-ink-60);">0%</div>
+        <div style="background: var(--oq-up-bg); color: var(--oq-up-fg);">+0.3%</div>
+        <div style="background: var(--oq-up-bg-2); color: var(--oq-up-fg);">+1%</div>
+        <div style="background: var(--oq-up-bg-3); color: var(--oq-up-fg);">+3%</div>
+        <div style="background: var(--oq-up); color: white;">≥ +5%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Type -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">02</span>字体 · Typography</h2>
+    <div class="card">
+      <div class="type-row">
+        <div class="type-meta">display · 48/1.0<br/>source han serif</div>
+        <div class="oq-display" style="font-size: 48px; line-height: 1.0; color: var(--oq-ink-90); font-weight: 600;">盯盘 · 洞察</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">h1 · 34/1.2<br/>source han serif</div>
+        <div class="oq-display" style="font-size: 34px; color: var(--oq-ink-90); font-weight: 600;">上证指数收涨 0.72%</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">h2 · 26/1.3<br/>source han serif</div>
+        <div class="oq-display" style="font-size: 26px; color: var(--oq-ink-90);">英伟达订单超预期</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">body · 14/1.55<br/>pingfang sc</div>
+        <div style="font-size: 14px; color: var(--oq-ink-80);">主业 UI 应该就只有滚动显示的部分股票和加密货币信息——简洁直观、熵减的交互设计。</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">digit · 20<br/>sf mono · tnum</div>
+        <div class="oq-mono oq-tnum" style="font-size: 20px; font-weight: 600; color: var(--oq-ink-90);">1,487.24&nbsp;&nbsp;+24.60&nbsp;&nbsp;<span class="up" style="padding: 2px 6px; border-radius: 4px;">+1.68%</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">micro · 11<br/>sf mono</div>
+        <div class="oq-mono" style="font-size: 11px; color: var(--oq-ink-60); letter-spacing: 0.1em;">14:32:05 · UPDATED · SHA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Buttons -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">03</span>按钮 / 输入 · Actions</h2>
+    <div class="card">
+      <div style="display:flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+        <button class="btn btn-primary">下单 · 买入</button>
+        <button class="btn btn-secondary">取消</button>
+        <button class="btn btn-ghost">查看K线</button>
+        <button class="btn btn-accent">启动策略</button>
+        <button class="btn btn-primary" style="background: var(--oq-down);">平仓</button>
+        <button class="btn btn-secondary">⌘K 菜单</button>
+      </div>
+      <div style="display:flex; gap: 12px;">
+        <input class="input" placeholder="搜索代码或名称，如 NVDA / 茅台 / BTC" style="flex: 1;"/>
+        <input class="input" placeholder="600519" style="width: 120px;"/>
+        <button class="btn btn-primary">添加</button>
+      </div>
+      <div style="margin-top: 14px; font-size: 12px; color: var(--oq-ink-60);">键盘：<span class="kbd">⌘</span> <span class="kbd">K</span> 呼出菜单 · <span class="kbd">/</span> 聚焦搜索 · <span class="kbd">ESC</span> 关闭</div>
+    </div>
+  </section>
+
+  <!-- Ticker -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">04</span>报价行 · Ticker</h2>
+    <div class="card">
+      <div class="tick-row" style="background: var(--oq-ink-05);">
+        <div><span class="sym">600519</span><span class="nm">贵州茅台</span></div>
+        <div class="price">1,487.24</div>
+        <div style="text-align:right;" class="digit up" >+24.60</div>
+        <div style="text-align:right;"><span class="pct up">+1.68%</span></div>
+        <div><svg class="spark" viewBox="0 0 80 24" width="80"><polyline fill="none" stroke="#0D7A6B" stroke-width="1.5" points="0,18 10,16 20,17 30,12 40,14 50,9 60,11 70,6 80,4"/></svg></div>
+      </div>
+      <div class="tick-row">
+        <div><span class="sym">TSLA</span><span class="nm">Tesla</span></div>
+        <div class="price">182.66</div>
+        <div style="text-align:right;" class="digit down">-7.56</div>
+        <div style="text-align:right;"><span class="pct down-strong">-3.97%</span></div>
+        <div><svg class="spark" viewBox="0 0 80 24" width="80"><polyline fill="none" stroke="#B83565" stroke-width="1.5" points="0,6 10,8 20,10 30,9 40,12 50,14 60,15 70,18 80,20"/></svg></div>
+      </div>
+      <div class="tick-row" id="flashRow">
+        <div><span class="sym">NVDA</span><span class="nm">NVIDIA · <i>tick 动画 demo</i></span></div>
+        <div class="price" id="flashPrice">892.55</div>
+        <div style="text-align:right;" class="digit up">+27.21</div>
+        <div style="text-align:right;"><span class="pct up-strong">+3.14%</span></div>
+        <div><svg class="spark" viewBox="0 0 80 24" width="80"><polyline fill="none" stroke="#0D7A6B" stroke-width="1.5" points="0,16 10,14 20,12 30,13 40,10 50,8 60,7 70,5 80,3"/></svg></div>
+      </div>
+      <div class="tick-row">
+        <div><span class="sym">000858</span><span class="nm">五粮液</span></div>
+        <div class="price">101.86</div>
+        <div style="text-align:right;" class="digit down">-1.58</div>
+        <div style="text-align:right;"><span class="pct down">-1.53%</span></div>
+        <div><svg class="spark" viewBox="0 0 80 24" width="80"><polyline fill="none" stroke="#B83565" stroke-width="1.5" points="0,8 10,9 20,11 30,12 40,14 50,13 60,15 70,16 80,17"/></svg></div>
+      </div>
+      <div style="margin-top: 14px; font-size: 12px; color: var(--oq-ink-60);">
+        每次价格更新，整行背景闪烁 600ms — <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" id="flashBtn">模拟 tick</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- News -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">05</span>新闻 + AI 摘要 · News</h2>
+    <div class="grid g-2">
+      <div class="news-card" style="border-left-color: var(--oq-up);">
+        <div class="meta"><span>13:48</span><span class="tag">科技</span><span>彭博</span><span style="color: var(--oq-up-fg); margin-left:auto;">● 影响 NVDA</span></div>
+        <h4>英伟达 Blackwell 超大客户订单超预期，Q3 指引上调</h4>
+        <div class="ai-bubble">四大云厂商合计下单达历史高位，AI 芯片景气延续；供应链台积电 CoWoS 产能成瓶颈。<b>对持仓影响：正面</b>，建议关注供应链龙头跟涨。</div>
+      </div>
+      <div class="news-card" style="border-left-color: var(--oq-down);">
+        <div class="meta"><span>14:32</span><span class="tag">宏观</span><span>路透社</span><span style="color: var(--oq-down-fg); margin-left:auto;">● 影响 美股</span></div>
+        <h4>Waller：通胀放缓，暂不宜降息</h4>
+        <div class="ai-bubble">鹰派信号进一步推高美债收益率，风险资产承压；<b>关注明日 CPI 数据</b>，若超预期可能触发短期调整。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Radii / shadow / spacing -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">06</span>圆角 · 阴影 · 间距</h2>
+    <div class="grid g-4" style="margin-bottom: 24px;">
+      <div class="radius-demo" style="border-radius: var(--oq-r-xs);">r-xs · 3px</div>
+      <div class="radius-demo" style="border-radius: var(--oq-r-sm);">r-sm · 6px</div>
+      <div class="radius-demo" style="border-radius: var(--oq-r-md);">r-md · 10px</div>
+      <div class="radius-demo" style="border-radius: var(--oq-r-lg);">r-lg · 14px</div>
+    </div>
+    <div class="grid g-3">
+      <div class="shadow-demo" style="box-shadow: var(--oq-shadow-sm);">shadow-sm</div>
+      <div class="shadow-demo" style="box-shadow: var(--oq-shadow-md);">shadow-md</div>
+      <div class="shadow-demo" style="box-shadow: var(--oq-shadow-lg);">shadow-lg</div>
+    </div>
+  </section>
+
+  <!-- Navigation pattern -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">07</span>导航模式 · Navigation</h2>
+    <div class="card">
+      <div style="font-size: 13px; color: var(--oq-ink-60); margin-bottom: 12px;">抛弃顶部横向 tab（挤压、干扰视觉）——改为左侧可呼出抽屉。平时隐藏，<span class="kbd">⌘</span><span class="kbd">K</span> 一键呼出。</div>
+      <div style="display: flex; border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-md); overflow: hidden;">
+        <div style="width: 220px; background: var(--oq-ink-10); padding: 16px; border-right: 1px solid var(--oq-ink-20);">
+          <div class="oq-mono" style="font-size: 10px; letter-spacing: 0.14em; color: var(--oq-ink-60); margin-bottom: 10px;">MARKETS</div>
+          <div style="padding: 6px 10px; background: var(--oq-ink-0); border-radius: 6px; font-size: 13px; margin-bottom: 3px;">🇨🇳 A股 <span style="float:right; color: var(--oq-ink-40); font-size: 11px;">6</span></div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60); margin-bottom: 3px;">🇺🇸 美股 <span style="float:right; color: var(--oq-ink-40); font-size: 11px;">14</span></div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60); margin-bottom: 3px;">🇭🇰 港股 <span style="float:right; color: var(--oq-ink-40); font-size: 11px;">4</span></div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60); margin-bottom: 3px;">₿ 加密 <span style="float:right; color: var(--oq-ink-40); font-size: 11px;">8</span></div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60);">⛏ 商品 <span style="float:right; color: var(--oq-ink-40); font-size: 11px;">3</span></div>
+          <div class="oq-mono" style="font-size: 10px; letter-spacing: 0.14em; color: var(--oq-ink-60); margin: 18px 0 10px;">TOOLS</div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60);">策略回测</div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60);">研报分析</div>
+          <div style="padding: 6px 10px; font-size: 13px; color: var(--oq-ink-60);">AI 助手</div>
+        </div>
+        <div style="flex:1; padding: 24px; color: var(--oq-ink-40); font-size: 12px; display:flex; align-items:center; justify-content:center;">← 左侧抽屉示意</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Principles -->
+  <section class="section">
+    <h2 class="section-title"><span class="idx">08</span>原则 · Principles</h2>
+    <div class="grid g-3">
+      <div class="card"><div class="oq-display" style="font-size: 18px; margin-bottom: 6px;">熵减</div><div style="font-size: 13px; color: var(--oq-ink-60); line-height: 1.6;">每多一个元素都要为信息增益负责。去掉装饰性渐变、多余 emoji、不必要的 badge。</div></div>
+      <div class="card"><div class="oq-display" style="font-size: 18px; margin-bottom: 6px;">克制</div><div style="font-size: 13px; color: var(--oq-ink-60); line-height: 1.6;">颜色只在涨跌、警告、当前选择时出现。其余一律中性。让数字说话。</div></div>
+      <div class="card"><div class="oq-display" style="font-size: 18px; margin-bottom: 6px;">等宽对齐</div><div style="font-size: 13px; color: var(--oq-ink-60); line-height: 1.6;">所有数字使用 tabular-nums + SF Mono，跳动时不撑行、不错位。</div></div>
+      <div class="card"><div class="oq-display" style="font-size: 18px; margin-bottom: 6px;">动画即信号</div><div style="font-size: 13px; color: var(--oq-ink-60); line-height: 1.6;">只有"有意义的变化"才动——tick 闪烁、大涨大跌数字放大、通知滑入。</div></div>
+      <div class="card"><div class="oq-display" style="font-size: 18px; margin-bottom: 6px;">不预设情绪</div><div style="font-size: 13px; color: var(--oq-ink-60); line-height: 1.6;">避开视网膜刺激色（饱和红绿）。青/品红让用户自己做判断，不煽动交易。</div></div>
+      <div class="card"><div class="oq-display" style="font-size: 18px; margin-bottom: 6px;">纸与屏</div><div style="font-size: 13px; color: var(--oq-ink-60); line-height: 1.6;">纸色底 + 衬线大标题，给信息密集的工作面留一点呼吸。像读一份早报。</div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  document.getElementById('themeBtn').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', cur === 'dark' ? '' : 'dark');
+  };
+  const flashBtn = document.getElementById('flashBtn');
+  const flashRow = document.getElementById('flashRow');
+  const flashPrice = document.getElementById('flashPrice');
+  let p = 892.55;
+  flashBtn.onclick = () => {
+    p += (Math.random() - 0.45) * 0.8;
+    flashPrice.textContent = p.toFixed(2);
+    const up = Math.random() > 0.3;
+    flashRow.classList.remove('oq-flash-up','oq-flash-down');
+    void flashRow.offsetWidth;
+    flashRow.classList.add(up ? 'oq-flash-up' : 'oq-flash-down');
+    if (Math.abs(Math.random()) > 0.7) {
+      flashPrice.classList.remove('oq-scale-pop');
+      void flashPrice.offsetWidth;
+      flashPrice.classList.add('oq-scale-pop');
+    }
+  };
+  // Auto demo
+  setInterval(() => flashBtn.click(), 2600);
+</script>
+</body>
+</html>

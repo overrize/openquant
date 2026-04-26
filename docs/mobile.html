@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>OpenQuant · Mobile / PWA</title>
+<link rel="stylesheet" href="assets/tokens.css"/>
+<style>
+  body { background: #e8e6df; min-height: 100vh; display:flex; align-items:center; justify-content:center; padding: 40px 20px; gap: 32px; flex-wrap: wrap;}
+
+  /* Phone frame */
+  .phone {
+    width: 390px; height: 844px; background: var(--oq-ink-05);
+    border-radius: 48px; border: 10px solid #1a1812;
+    overflow: hidden; position: relative;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.35);
+    display: flex; flex-direction: column;
+  }
+  .notch { position:absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 32px; background: #1a1812; border-radius: 0 0 20px 20px; z-index: 5;}
+  .statusbar { height: 44px; display:flex; align-items:center; justify-content: space-between; padding: 0 30px; font-family: var(--oq-font-mono); font-size: 13px; font-weight: 600; color: var(--oq-ink-90); flex-shrink: 0;}
+
+  .tablet {
+    width: 820px; height: 620px; background: var(--oq-ink-05);
+    border-radius: 28px; border: 10px solid #1a1812; overflow: hidden;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.35);
+    display: flex; flex-direction: column; position: relative;
+  }
+
+  /* ==================== MOBILE ==================== */
+  .m-header {
+    padding: 8px 16px 12px; display: flex; align-items: center; gap: 10px;
+    background: var(--oq-ink-05);
+  }
+  .m-header .logo {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--oq-ink-90), var(--oq-brand-accent));
+    color: white; display: grid; place-items: center; font-family: var(--oq-font-mono); font-weight: 700; font-size: 11px;
+  }
+  .m-title { font-family: var(--oq-font-display); font-weight: 600; font-size: 17px; color: var(--oq-ink-90);}
+  .m-title small { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-40); padding: 2px 5px; border: 1px solid var(--oq-ink-20); border-radius: 3px; margin-left: 4px;}
+  .m-head-btn { margin-left: auto; width: 32px; height: 32px; border-radius: 8px; display:grid; place-items:center; background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); color: var(--oq-ink-80); font-size: 14px;}
+
+  .m-search {
+    margin: 0 16px 12px; display:flex; gap: 8px; align-items:center; padding: 9px 14px;
+    background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: 999px; font-size: 13px; color: var(--oq-ink-40);
+  }
+
+  .m-tape { display: flex; gap: 14px; padding: 0 16px 8px; overflow-x: auto; font-family: var(--oq-font-mono); -webkit-overflow-scrolling: touch; }
+  .m-tape::-webkit-scrollbar { display: none;}
+  .m-tape .it { display: flex; flex-direction: column; white-space: nowrap; flex-shrink: 0; }
+  .m-tape .it .nm { font-size: 9.5px; color: var(--oq-ink-40); letter-spacing: 0.08em; text-transform: uppercase;}
+  .m-tape .it .v  { font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--oq-ink-90);}
+  .m-tape .it .d  { font-size: 10px; font-variant-numeric: tabular-nums;}
+
+  .m-chips { display:flex; gap: 4px; padding: 0 16px 8px; overflow-x: auto;}
+  .m-chips button { padding: 5px 12px; border-radius: 999px; border: none; background: transparent; font-size: 12px; color: var(--oq-ink-60); white-space: nowrap; flex-shrink: 0;}
+  .m-chips button.on { background: var(--oq-ink-90); color: white;}
+
+  .m-list { flex: 1; overflow-y: auto; padding: 0 8px; }
+  .m-row {
+    display: grid; grid-template-columns: 1fr 90px 84px; align-items: center;
+    padding: 14px 10px; border-bottom: 1px solid var(--oq-ink-15);
+    border-radius: 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .m-row:active { background: var(--oq-ink-10);}
+  .m-row .sym { font-weight: 600; font-size: 14px; color: var(--oq-ink-90);}
+  .m-row .nm { font-size: 11px; color: var(--oq-ink-60); margin-top: 2px;}
+  .m-row .px { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; text-align: right; color: var(--oq-ink-90);}
+  .m-row .pct {
+    font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums;
+    font-size: 12px; font-weight: 700; text-align: center; padding: 6px 0;
+    border-radius: 6px; margin-left: 8px;
+  }
+  .m-row .pct.up-4   { background: var(--oq-up); color: white;}
+  .m-row .pct.up-2   { background: var(--oq-up-bg-2); color: var(--oq-up-fg);}
+  .m-row .pct.up     { background: var(--oq-up-bg); color: var(--oq-up-fg);}
+  .m-row .pct.down-4 { background: var(--oq-down); color: white;}
+  .m-row .pct.down-2 { background: var(--oq-down-bg-2); color: var(--oq-down-fg);}
+  .m-row .pct.down   { background: var(--oq-down-bg); color: var(--oq-down-fg);}
+
+  /* Bottom nav + tab bar */
+  .m-fab {
+    position: absolute; bottom: 94px; right: 18px; z-index: 10;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--oq-ink-90); color: var(--oq-ink-05);
+    display: grid; place-items: center;
+    box-shadow: var(--oq-shadow-lg);
+  }
+
+  .m-tabbar {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    padding: 8px 0 22px; border-top: 1px solid var(--oq-ink-20); background: var(--oq-ink-05);
+    flex-shrink: 0;
+  }
+  .m-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: var(--oq-ink-40);}
+  .m-tab.on { color: var(--oq-ink-90);}
+  .m-tab svg { opacity: 0.9; }
+
+  /* Pull-to-refresh hint */
+  .ptr { text-align: center; font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-40); padding: 4px; letter-spacing: 0.12em;}
+
+  /* ================ TABLET ================ */
+  .t-shell { display: grid; grid-template-columns: 72px 1fr; height: 100%;}
+  .t-rail { background: var(--oq-ink-10); border-right: 1px solid var(--oq-ink-20); display:flex; flex-direction: column; align-items:center; padding: 14px 0; gap: 6px;}
+  .t-rail .logo { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, var(--oq-ink-90), var(--oq-brand-accent)); color: white; display:grid; place-items:center; font-family: var(--oq-font-mono); font-weight: 700; font-size: 12px; margin-bottom: 8px;}
+  .t-rail .ri { width: 44px; height: 44px; border-radius: 10px; display:grid; place-items:center; color: var(--oq-ink-60); cursor: pointer;}
+  .t-rail .ri.on { background: var(--oq-ink-0); color: var(--oq-ink-90); box-shadow: var(--oq-shadow-sm);}
+  .t-rail .ri:hover:not(.on) { background: var(--oq-ink-15); color: var(--oq-ink-90);}
+  .t-rail .sep { width: 28px; height: 1px; background: var(--oq-ink-20); margin: 8px 0;}
+  .t-rail .spacer { flex: 1;}
+  .t-rail .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--oq-brand-accent); color: white; display:grid; place-items:center; font-size: 11px; font-weight: 600;}
+
+  .t-main { display: grid; grid-template-rows: 40px 1fr; overflow: hidden;}
+  .t-top { display:flex; align-items:center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--oq-ink-20); background: var(--oq-ink-05);}
+  .t-crumb { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-40); letter-spacing: 0.1em;}
+  .t-search { flex: 1; max-width: 360px; margin-left: auto; padding: 4px 12px; border: 1px solid var(--oq-ink-20); border-radius: 999px; background: var(--oq-ink-0); display:flex; align-items:center; gap: 8px; font-size: 12px; color: var(--oq-ink-60);}
+
+  .t-body { display: grid; grid-template-columns: 1fr 260px; gap: 8px; padding: 8px; overflow: hidden;}
+  .t-panel { background: var(--oq-ink-0); border: 1px solid var(--oq-ink-20); border-radius: var(--oq-r-md); overflow: hidden; display: flex; flex-direction: column;}
+  .t-panel-head { padding: 8px 12px; border-bottom: 1px solid var(--oq-ink-15); font-family: var(--oq-font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--oq-ink-60); text-transform: uppercase; font-weight: 600;}
+  .t-panel-body { flex: 1; overflow: auto;}
+
+  .t-chart-block { display: grid; grid-template-rows: 260px 1fr; gap: 8px;}
+  .t-row { display: grid; grid-template-columns: 1fr 90px 80px 70px; padding: 8px 12px; border-bottom: 1px solid var(--oq-ink-15); align-items: center; font-size: 12px;}
+  .t-row:hover { background: var(--oq-ink-05);}
+  .t-row .sym { font-weight: 600; color: var(--oq-ink-90); }
+  .t-row .nm { font-size: 10px; color: var(--oq-ink-60); margin-left: 4px;}
+  .t-row .px { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--oq-ink-90);}
+  .t-row .pct { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; padding: 2px 5px; border-radius: 3px;}
+  .t-row .pct.up { color: var(--oq-up-fg); background: var(--oq-up-bg);}
+  .t-row .pct.down { color: var(--oq-down-fg); background: var(--oq-down-bg);}
+  .t-row .pct.up-3 { color: white; background: var(--oq-up-bg-3);}
+  .t-row .pct.down-3 { color: white; background: var(--oq-down-bg-3);}
+
+  .t-side-news { padding: 10px 12px; border-bottom: 1px dashed var(--oq-ink-15);}
+  .t-side-news .m { font-family: var(--oq-font-mono); font-size: 10px; color: var(--oq-ink-60); margin-bottom: 4px;}
+  .t-side-news h6 { font-family: var(--oq-font-display); margin: 0 0 4px; font-size: 12px; line-height: 1.4; color: var(--oq-ink-90); font-weight: 600;}
+  .t-side-news p { font-size: 10.5px; line-height: 1.5; margin: 0; color: var(--oq-ink-60);}
+
+  .device-label { text-align: center; font-family: var(--oq-font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--oq-ink-60); margin-top: 12px; }
+  .container { display: flex; flex-direction: column; align-items: center;}
+
+  /* sheet (opened for detail) */
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: var(--oq-ink-0); border-radius: 24px 24px 0 0;
+    padding: 12px 20px 22px; box-shadow: 0 -20px 40px -10px rgba(0,0,0,0.15);
+    max-height: 70%; display: flex; flex-direction: column;
+    transform: translateY(100%); transition: transform 280ms var(--oq-ease-out);
+  }
+  .sheet.on { transform: translateY(0); }
+  .sheet .grip { width: 40px; height: 4px; border-radius: 2px; background: var(--oq-ink-30); margin: 0 auto 10px;}
+  .sheet-px { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 32px; font-weight: 600; color: var(--oq-ink-90);}
+  .sheet-delta { font-family: var(--oq-font-mono); font-variant-numeric: tabular-nums; font-size: 13px; margin-top: 2px;}
+  .sheet-spark { margin: 10px 0;}
+  .sheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
+  .sheet-actions button { padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600;}
+  .sheet-actions .buy { background: var(--oq-up); color: white;}
+  .sheet-actions .sell { background: var(--oq-down); color: white;}
+
+  @media (max-width: 900px) {
+    body { padding: 20px 10px; }
+    .phone { width: 340px; height: 720px; border-radius: 40px;}
+    .tablet { display: none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar">
+      <span>9:41</span>
+      <span style="display:flex; gap:4px;">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="currentColor"><rect x="0" y="6" width="2" height="4" rx="0.5"/><rect x="4" y="4" width="2" height="6" rx="0.5"/><rect x="8" y="2" width="2" height="8" rx="0.5"/><rect x="12" y="0" width="2" height="10" rx="0.5"/></svg>
+        <svg width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="15" height="9" rx="2"/><rect x="2" y="2" width="11" height="6" fill="currentColor"/><rect x="16" y="3.5" width="1.5" height="3"/></svg>
+      </span>
+    </div>
+
+    <div class="m-header">
+      <div class="logo">OQ</div>
+      <div class="m-title">OpenQuant <small>v2.0</small></div>
+      <div class="m-head-btn">⌘</div>
+    </div>
+    <div class="m-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <span>搜索股票 · 币种 · 问 AI</span>
+    </div>
+
+    <div class="m-tape">
+      <div class="it"><span class="nm">上证</span><span class="v">3184.55</span><span class="d" style="color: var(--oq-up-fg);">+0.72%</span></div>
+      <div class="it"><span class="nm">恒生</span><span class="v">18432.6</span><span class="d" style="color: var(--oq-up-fg);">+0.48%</span></div>
+      <div class="it"><span class="nm">纳指</span><span class="v">18544.2</span><span class="d" style="color: var(--oq-up-fg);">+0.92%</span></div>
+      <div class="it"><span class="nm">BTC</span><span class="v">68,234</span><span class="d" style="color: var(--oq-up-fg);">+2.08%</span></div>
+      <div class="it"><span class="nm">ETH</span><span class="v">3,542</span><span class="d" style="color: var(--oq-down-fg);">-1.04%</span></div>
+      <div class="it"><span class="nm">沪金</span><span class="v">778.32</span><span class="d" style="color: var(--oq-up-fg);">+0.49%</span></div>
+    </div>
+
+    <div class="m-chips">
+      <button class="on">自选</button>
+      <button>A股</button>
+      <button>美股</button>
+      <button>加密</button>
+      <button>期货</button>
+    </div>
+
+    <div class="m-list">
+      <div class="ptr">▾ 下拉刷新</div>
+      <div class="m-row">
+        <div><div class="sym">NVDA</div><div class="nm">NVIDIA</div></div>
+        <div class="px">892.55</div>
+        <div class="pct up-4">+3.14%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">600519</div><div class="nm">贵州茅台</div></div>
+        <div class="px">1,487.24</div>
+        <div class="pct up">+1.68%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">BTC</div><div class="nm">Bitcoin · USDT</div></div>
+        <div class="px">68,234</div>
+        <div class="pct up-2">+2.08%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">SOL</div><div class="nm">Solana · USDT</div></div>
+        <div class="px">178.45</div>
+        <div class="pct up-4">+5.09%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">TSLA</div><div class="nm">Tesla</div></div>
+        <div class="px">182.66</div>
+        <div class="pct down-4">-3.97%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">300750</div><div class="nm">宁德时代</div></div>
+        <div class="px">244.20</div>
+        <div class="pct down-3">-3.85%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">ETH</div><div class="nm">Ethereum</div></div>
+        <div class="px">3,542.80</div>
+        <div class="pct down">-1.04%</div>
+      </div>
+      <div class="m-row">
+        <div><div class="sym">AAPL</div><div class="nm">Apple</div></div>
+        <div class="px">231.44</div>
+        <div class="pct up">+1.17%</div>
+      </div>
+    </div>
+
+    <div class="m-fab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    </div>
+
+    <div class="m-tabbar">
+      <div class="m-tab on">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        <span>行情</span>
+      </div>
+      <div class="m-tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
+        <span>图表</span>
+      </div>
+      <div class="m-tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        <span>AI</span>
+      </div>
+      <div class="m-tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
+        <span>新闻</span>
+      </div>
+      <div class="m-tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 16 0v1"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+  <div class="device-label">iPhone · PWA 独立窗口</div>
+</div>
+
+<div class="container">
+  <div class="tablet">
+    <div class="t-shell">
+      <div class="t-rail">
+        <div class="logo">OQ</div>
+        <div class="ri on" title="行情">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        </div>
+        <div class="ri" title="图表">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20V10M18 20V4M6 20v-6"/></svg>
+        </div>
+        <div class="ri" title="新闻">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </div>
+        <div class="ri" title="AI">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        </div>
+        <div class="ri" title="策略">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+        </div>
+        <div class="sep"></div>
+        <div class="ri" title="提醒">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg>
+        </div>
+        <div class="spacer"></div>
+        <div class="ri" title="设置">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+        </div>
+        <div class="avatar">W</div>
+      </div>
+      <div class="t-main">
+        <div class="t-top">
+          <span class="t-crumb">行情 / 自选</span>
+          <div class="t-search">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <span>搜索 · 问 AI</span>
+            <span style="margin-left:auto; font-family: var(--oq-font-mono); font-size: 10px; padding: 1px 5px; background: var(--oq-ink-10); border-radius: 3px;">⌘K</span>
+          </div>
+        </div>
+        <div class="t-body">
+          <div class="t-chart-block">
+            <div class="t-panel">
+              <div class="t-panel-head" style="display:flex; justify-content:space-between;">
+                <span>NVDA · 15m</span>
+                <span style="letter-spacing:0; text-transform:none; font-family: var(--oq-font-mono); color: var(--oq-up-fg); font-weight: 700;">892.55 · +3.14%</span>
+              </div>
+              <svg viewBox="0 0 400 200" preserveAspectRatio="none" width="100%" height="100%" style="flex: 1;">
+                <defs>
+                  <linearGradient id="tabArea" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#0D7A6B" stop-opacity="0.2"/>
+                    <stop offset="1" stop-color="#0D7A6B" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,160 L20,155 L40,140 L60,145 L80,130 L100,135 L120,115 L140,120 L160,105 L180,100 L200,92 L220,95 L240,85 L260,72 L280,78 L300,60 L320,55 L340,48 L360,40 L380,30 L400,20 L400,200 L0,200 Z" fill="url(#tabArea)"/>
+                <path d="M0,160 L20,155 L40,140 L60,145 L80,130 L100,135 L120,115 L140,120 L160,105 L180,100 L200,92 L220,95 L240,85 L260,72 L280,78 L300,60 L320,55 L340,48 L360,40 L380,30 L400,20" fill="none" stroke="#0D7A6B" stroke-width="1.8"/>
+              </svg>
+            </div>
+            <div class="t-panel">
+              <div class="t-panel-head">自选 · 18</div>
+              <div class="t-panel-body">
+                <div class="t-row"><div><span class="sym">NVDA</span><span class="nm">NVIDIA</span></div><div class="px">892.55</div><div></div><div class="pct up-3">+3.14%</div></div>
+                <div class="t-row"><div><span class="sym">600519</span><span class="nm">贵州茅台</span></div><div class="px">1,487.24</div><div></div><div class="pct up">+1.68%</div></div>
+                <div class="t-row"><div><span class="sym">BTC</span><span class="nm">Bitcoin</span></div><div class="px">68,234</div><div></div><div class="pct up">+2.08%</div></div>
+                <div class="t-row"><div><span class="sym">SOL</span><span class="nm">Solana</span></div><div class="px">178.45</div><div></div><div class="pct up-3">+5.09%</div></div>
+                <div class="t-row"><div><span class="sym">TSLA</span><span class="nm">Tesla</span></div><div class="px">182.66</div><div></div><div class="pct down-3">-3.97%</div></div>
+                <div class="t-row"><div><span class="sym">300750</span><span class="nm">宁德时代</span></div><div class="px">244.20</div><div></div><div class="pct down-3">-3.85%</div></div>
+                <div class="t-row"><div><span class="sym">ETH</span><span class="nm">Ethereum</span></div><div class="px">3,542.80</div><div></div><div class="pct down">-1.04%</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="t-panel">
+            <div class="t-panel-head">新闻 · AI 摘要</div>
+            <div class="t-panel-body">
+              <div class="t-side-news" style="border-left: 2px solid var(--oq-up); padding-left: 10px;">
+                <div class="m">13:48 · 彭博</div>
+                <h6>英伟达 Blackwell 订单超预期</h6>
+                <p>四大云厂商合计下单达历史高位 · AI 芯片景气延续。</p>
+              </div>
+              <div class="t-side-news" style="border-left: 2px solid var(--oq-down); padding-left: 10px;">
+                <div class="m">14:32 · 路透</div>
+                <h6>Waller：通胀放缓，暂不宜降息</h6>
+                <p>鹰派信号进一步推高美债收益率。</p>
+              </div>
+              <div class="t-side-news" style="border-left: 2px solid var(--oq-up); padding-left: 10px;">
+                <div class="m">13:10 · 证券时报</div>
+                <h6>长期资金入市新政研究中</h6>
+                <p>险资、养老金权益投资比例有望放宽。</p>
+              </div>
+              <div class="t-side-news" style="border-left: 2px solid var(--oq-up); padding-left: 10px;">
+                <div class="m">12:40 · CoinDesk</div>
+                <h6>比特币 ETF 连续 5 日净流入</h6>
+                <p>机构配置需求回暖，累计 +12 亿美元。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="device-label">iPad · 分栏布局 / Apple Pencil 可标注</div>
+</div>
+
+</body>
+</html>
